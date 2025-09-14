@@ -1,0 +1,3 @@
+# Spec Summary (Lite)
+
+Implement the foundational infrastructure and core features for Censeo's story pointing application, including multi-environment deployment setup, authentication system, team management, and blind voting workflow. This phase establishes the secure, scalable foundation needed for real-time collaborative estimation with comprehensive local development and production environment support including Google Cloud infrastructure, magic link authentication, Socket.IO real-time communication, and complete CI/CD pipeline setup.
