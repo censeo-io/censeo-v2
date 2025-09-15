@@ -1,8 +1,7 @@
 -- Initialize Censeo development database
 -- This script runs when the PostgreSQL container starts for the first time
 
--- Ensure the database exists
-CREATE DATABASE censeo_dev;
+-- Database already created by POSTGRES_DB environment variable
 
 -- Switch to the censeo_dev database
 \c censeo_dev;

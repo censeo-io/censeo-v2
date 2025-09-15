@@ -17,13 +17,13 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
     - [x] 1.5 Create development-friendly environment variables and configs
     - [x] 1.6 Verify all containers start and communicate properly
 
-- [ ] 2. **Backend Foundation**
-    - [ ] 2.1 Write tests for Django project setup and basic models
-    - [ ] 2.2 Initialize Django project with REST framework configuration
-    - [ ] 2.3 Create database models (Users, Sessions, Stories, Votes)
-    - [ ] 2.4 Set up Django migrations and run initial migration
-    - [ ] 2.5 Create mock authentication system with session management
-    - [ ] 2.6 Verify backend API framework is functional
+- [x] 2. **Backend Foundation**
+    - [x] 2.1 Write tests for Django project setup and basic models
+    - [x] 2.2 Initialize Django project with REST framework configuration
+    - [x] 2.3 Create database models (Users, Sessions, Stories, Votes)
+    - [x] 2.4 Set up Django migrations and run initial migration
+    - [x] 2.5 Create mock authentication system with session management
+    - [x] 2.6 Verify backend API framework is functional
 
 - [ ] 3. **Frontend Foundation**
     - [ ] 3.1 Write tests for React app initialization and basic components
