@@ -25,13 +25,13 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
     - [x] 2.5 Create mock authentication system with session management
     - [x] 2.6 Verify backend API framework is functional
 
-- [ ] 3. **Frontend Foundation**
-    - [ ] 3.1 Write tests for React app initialization and basic components
-    - [ ] 3.2 Initialize React app with TypeScript and Material-UI
-    - [ ] 3.3 Set up routing and basic app structure
-    - [ ] 3.4 Create API client configuration for backend communication
-    - [ ] 3.5 Implement basic authentication flow (mock login)
-    - [ ] 3.6 Verify frontend can communicate with backend
+- [x] 3. **Frontend Foundation**
+    - [x] 3.1 Write tests for React app initialization and basic components
+    - [x] 3.2 Initialize React app with TypeScript and Material-UI
+    - [x] 3.3 Set up routing and basic app structure
+    - [x] 3.4 Create API client configuration for backend communication
+    - [x] 3.5 Implement basic authentication flow (mock login)
+    - [x] 3.6 Verify frontend can communicate with backend
 
 - [ ] 4. **Basic Session Management**
     - [ ] 4.1 Write tests for session creation and join functionality
