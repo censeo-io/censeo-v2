@@ -9,13 +9,13 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
 
 ### Phase A: Development Environment + Basic Session Management
 
-- [ ] 1. **Development Environment Setup**
-    - [ ] 1.1 Write tests for Docker Compose configuration
-    - [ ] 1.2 Create Docker Compose file with Django, React, PostgreSQL containers
-    - [ ] 1.3 Set up project directory structure (/frontend, /backend, /database)
-    - [ ] 1.4 Configure hot-reload for Django and React development
-    - [ ] 1.5 Create development-friendly environment variables and configs
-    - [ ] 1.6 Verify all containers start and communicate properly
+- [x] 1. **Development Environment Setup**
+    - [x] 1.1 Write tests for Docker Compose configuration
+    - [x] 1.2 Create Docker Compose file with Django, React, PostgreSQL containers
+    - [x] 1.3 Set up project directory structure (/frontend, /backend, /database)
+    - [x] 1.4 Configure hot-reload for Django and React development
+    - [x] 1.5 Create development-friendly environment variables and configs
+    - [x] 1.6 Verify all containers start and communicate properly
 
 - [ ] 2. **Backend Foundation**
     - [ ] 2.1 Write tests for Django project setup and basic models

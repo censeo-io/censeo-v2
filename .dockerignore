@@ -1,0 +1,61 @@
+# Docker ignore file to optimize build context
+
+# Version control
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Dependencies that will be installed in container
+backend/venv/
+frontend/node_modules/
+
+# Build artifacts
+frontend/build/
+backend/static/
+backend/media/
+
+# Test files and coverage
+**/tests/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment files (will be handled by docker-compose)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
