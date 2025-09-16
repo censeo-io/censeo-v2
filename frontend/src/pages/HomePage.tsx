@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthContext';
+import CenseoLogoImage from '../components/CenseoLogoImage';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -132,9 +133,9 @@ const HomePage: React.FC = () => {
           mb: 4,
         }}
       >
-        <Typography variant="h1" component="h1" gutterBottom>
-          Censeo Story Pointing
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <CenseoLogoImage width={120} height={144} showText={true} />
+        </Box>
         <Typography variant="h5" color="text.secondary" sx={{ mb: 3 }}>
           Collaborative story estimation for agile development teams
         </Typography>

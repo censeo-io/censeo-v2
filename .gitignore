@@ -18,6 +18,7 @@ dist/
 *.egg-info/
 .coverage
 htmlcov/
+coverage/
 
 # IDE and editor files
 .vscode/
