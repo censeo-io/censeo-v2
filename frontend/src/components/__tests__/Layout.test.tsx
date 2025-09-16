@@ -8,7 +8,24 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import Layout from '../Layout';
+import { AuthProvider } from '../auth/AuthContext';
 import { createAppTheme } from '../../theme/theme';
+
+// Mock the API
+jest.mock('../../services/api', () => ({
+  authApi: {
+    login: jest.fn().mockResolvedValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      session_token: 'mock-token',
+      message: 'Login successful',
+    }),
+    logout: jest.fn().mockResolvedValue({ message: 'Logout successful' }),
+    getStatus: jest.fn().mockResolvedValue({
+      authenticated: false,
+      user: null,
+    }),
+  },
+}));
 
 const mockNavigate = jest.fn();
 
@@ -24,7 +41,9 @@ describe('Layout Component', () => {
     return render(
       <MemoryRouter>
         <ThemeProvider theme={theme}>
-          <Layout>{children}</Layout>
+          <AuthProvider>
+            <Layout>{children}</Layout>
+          </AuthProvider>
         </ThemeProvider>
       </MemoryRouter>
     );

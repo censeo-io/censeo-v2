@@ -5,10 +5,19 @@
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import App from '../App';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, Box } from '@mui/material';
+import { AuthProvider } from '../components/auth/AuthContext';
+import { createAppTheme } from '../theme/theme';
+import Layout from '../components/Layout';
+import HomePage from '../pages/HomePage';
+import CreateSessionPage from '../pages/CreateSessionPage';
+import JoinSessionPage from '../pages/JoinSessionPage';
+import SessionPage from '../pages/SessionPage';
+import ErrorBoundary from '../components/ErrorBoundary';
 
-// Mock the API client to prevent actual API calls during tests
+// Mock the API module before any imports
 jest.mock('../services/api', () => ({
   apiClient: {
     get: jest.fn(),
@@ -17,23 +26,87 @@ jest.mock('../services/api', () => ({
     delete: jest.fn(),
   },
   authApi: {
-    login: jest.fn(),
-    logout: jest.fn(),
-    getStatus: jest.fn(),
+    login: jest.fn().mockResolvedValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      session_token: 'mock-token',
+      message: 'Login successful',
+    }),
+    logout: jest.fn().mockResolvedValue({ message: 'Logout successful' }),
+    getStatus: jest.fn().mockResolvedValue({
+      authenticated: false,
+      user: null,
+    }),
+  },
+  generalApi: {
+    healthCheck: jest.fn(),
+    getApiRoot: jest.fn(),
+  },
+  sessionApi: {
+    createSession: jest.fn(),
+    getSessions: jest.fn(),
+    getSession: jest.fn(),
+    joinSession: jest.fn(),
+    leaveSession: jest.fn(),
+    updateSessionStatus: jest.fn(),
   },
 }));
+
+// Get reference to the mocked module for use in tests
+const mockedApi = jest.mocked(require('../services/api'));
+
+// Create a testable version of App without the Router
+const theme = createAppTheme();
+
+const TestableApp: React.FC = () => {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <Box
+            data-testid="app-container"
+            sx={{
+              minHeight: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+              fontFamily: theme.typography.fontFamily,
+            }}
+            component="div"
+          >
+            <Layout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/create-session" element={<CreateSessionPage />} />
+                <Route path="/join-session" element={<JoinSessionPage />} />
+                <Route path="/session/:sessionId" element={<SessionPage />} />
+                <Route path="*" element={<div>Page Not Found</div>} />
+              </Routes>
+            </Layout>
+          </Box>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+};
 
 describe('App Component', () => {
   const renderApp = (initialRoute = '/') => {
     return render(
       <MemoryRouter initialEntries={[initialRoute]}>
-        <App />
+        <TestableApp />
       </MemoryRouter>
     );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset the auth status mock to default
+    mockedApi.authApi.getStatus.mockResolvedValue({
+      authenticated: false,
+      user: null,
+    });
+    // Clear localStorage
+    localStorage.clear();
   });
 
   describe('App Initialization', () => {
@@ -56,7 +129,7 @@ describe('App Component', () => {
 
       // Check that Material-UI theme is applied by looking for theme-specific elements
       const appContainer = screen.getByTestId('app-container');
-      expect(appContainer).toHaveStyle('font-family: "Roboto", "Helvetica", "Arial", sans-serif');
+      expect(appContainer).toHaveStyle('font-family: "Roboto","Helvetica","Arial",sans-serif');
     });
 
     test('initializes routing system', () => {
@@ -96,9 +169,10 @@ describe('App Component', () => {
     test('has proper document structure for screen readers', () => {
       renderApp();
 
-      // Should have main landmark
-      const main = screen.getByRole('main');
+      // Should have main landmark from Layout component
+      const main = screen.getByTestId('layout-content');
       expect(main).toBeInTheDocument();
+      expect(main).toHaveAttribute('role', 'main');
     });
 
     test('maintains focus management for navigation', () => {

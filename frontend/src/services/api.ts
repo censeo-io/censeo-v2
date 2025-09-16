@@ -16,6 +16,13 @@ import {
   HealthCheckResponse,
   ApiRootResponse
 } from '../types/api';
+import {
+  Session,
+  CreateSessionRequest,
+  CreateSessionResponse,
+  JoinSessionResponse,
+  SessionListResponse
+} from '../types/session';
 
 // API base URL from environment or default to localhost
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
@@ -30,13 +37,34 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: true, // Include cookies for session management
 });
 
-// Request interceptor to add authentication headers
+// Function to get CSRF token from cookies (Django standard approach)
+const getCSRFToken = (): string | null => {
+  // Get CSRF token from cookies (Django sets 'csrftoken' cookie)
+  const name = 'csrftoken';
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+  return null;
+};
+
+// Request interceptor to add authentication headers and CSRF token
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('session_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add CSRF token for state-changing requests
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken;
+      }
+    }
+
     return config;
   },
   (error) => {
@@ -85,11 +113,20 @@ const handleApiRequest = async <T>(request: Promise<any>): Promise<T> => {
 // Authentication API methods using fetch for direct backend communication
 export const authApi = {
   async login(name: string, email: string): Promise<LoginResponse> {
+    // Get CSRF token from cookie
+    const csrfToken = getCSRFToken();
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken;
+    }
+
     const response = await fetch(`${API_BASE_URL}/auth/login/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
       body: JSON.stringify({ name, email }),
     });
@@ -117,11 +154,20 @@ export const authApi = {
   },
 
   async logout(): Promise<LogoutResponse> {
+    // Get CSRF token from cookie
+    const csrfToken = getCSRFToken();
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken;
+    }
+
     const response = await fetch(`${API_BASE_URL}/auth/logout/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
     });
 
@@ -182,6 +228,45 @@ export const generalApi = {
   async getApiRoot(): Promise<ApiRootResponse> {
     return handleApiRequest<ApiRootResponse>(
       apiClient.get('/')
+    );
+  },
+};
+
+// Session API methods
+export const sessionApi = {
+  async createSession(sessionData: CreateSessionRequest): Promise<CreateSessionResponse> {
+    return handleApiRequest<CreateSessionResponse>(
+      apiClient.post('/sessions/', sessionData)
+    );
+  },
+
+  async getSessions(): Promise<SessionListResponse> {
+    return handleApiRequest<SessionListResponse>(
+      apiClient.get('/sessions/')
+    );
+  },
+
+  async getSession(sessionId: string): Promise<Session> {
+    return handleApiRequest<Session>(
+      apiClient.get(`/sessions/${sessionId}/`)
+    );
+  },
+
+  async joinSession(sessionId: string): Promise<JoinSessionResponse> {
+    return handleApiRequest<JoinSessionResponse>(
+      apiClient.post(`/sessions/${sessionId}/join/`)
+    );
+  },
+
+  async leaveSession(sessionId: string): Promise<{ message: string; session_id: string }> {
+    return handleApiRequest<{ message: string; session_id: string }>(
+      apiClient.post(`/sessions/${sessionId}/leave/`)
+    );
+  },
+
+  async updateSessionStatus(sessionId: string, status: 'active' | 'completed' | 'paused'): Promise<{ message: string; session: Session }> {
+    return handleApiRequest<{ message: string; session: Session }>(
+      apiClient.post(`/sessions/${sessionId}/status/`, { status })
     );
   },
 };

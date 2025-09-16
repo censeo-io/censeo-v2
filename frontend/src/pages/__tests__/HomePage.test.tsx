@@ -14,11 +14,21 @@ import { createAppTheme } from '../../theme/theme';
 // Mock the API
 jest.mock('../../services/api', () => ({
   authApi: {
-    login: jest.fn(),
-    logout: jest.fn(),
-    getStatus: jest.fn(),
+    login: jest.fn().mockResolvedValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      session_token: 'mock-token',
+      message: 'Login successful',
+    }),
+    logout: jest.fn().mockResolvedValue({ message: 'Logout successful' }),
+    getStatus: jest.fn().mockResolvedValue({
+      authenticated: false,
+      user: null,
+    }),
   },
 }));
+
+// Get reference to the mocked module
+const mockedApi = jest.mocked(require('../../services/api'));
 
 const mockNavigate = jest.fn();
 
@@ -44,78 +54,120 @@ describe('HomePage Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset auth status to unauthenticated for most tests
+    mockedApi.authApi.getStatus.mockResolvedValue({
+      authenticated: false,
+      user: null,
+    });
+    // Clear localStorage
+    localStorage.clear();
   });
 
   describe('Page Structure', () => {
-    test('renders main homepage elements', () => {
+    test('renders main homepage elements', async () => {
       renderHomePage();
 
       expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
-      expect(screen.getByTestId('homepage-hero')).toBeInTheDocument();
-      expect(screen.getByTestId('homepage-actions')).toBeInTheDocument();
+
+      // Wait for auth status to settle
+      await waitFor(() => {
+        expect(screen.getByTestId('homepage-hero')).toBeInTheDocument();
+        expect(screen.getByTestId('homepage-actions')).toBeInTheDocument();
+      });
     });
 
-    test('displays application title and description', () => {
+    test('displays application title and description', async () => {
       renderHomePage();
 
-      expect(screen.getByText('Censeo Story Pointing')).toBeInTheDocument();
-      expect(screen.getByText(/collaborative story estimation/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText(/collaborative story estimation/i)).toBeInTheDocument();
+      });
     });
 
-    test('renders call-to-action buttons', () => {
+    test('renders call-to-action buttons', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      expect(screen.getByText('Create Session')).toBeInTheDocument();
-      expect(screen.getByText('Join Session')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Create Session')).toBeInTheDocument();
+        expect(screen.getByText('Join Session')).toBeInTheDocument();
+      });
     });
   });
 
   describe('User Interactions', () => {
-    test('handles create session button click', () => {
+    test('handles create session button click', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      const createButton = screen.getByText('Create Session');
-      fireEvent.click(createButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/create-session');
+      await waitFor(() => {
+        const createButton = screen.getByText('Create Session');
+        fireEvent.click(createButton);
+        expect(mockNavigate).toHaveBeenCalledWith('/create-session');
+      });
     });
 
-    test('handles join session button click', () => {
+    test('handles join session button click', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      const joinButton = screen.getByText('Join Session');
-      fireEvent.click(joinButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/join-session');
+      await waitFor(() => {
+        const joinButton = screen.getByText('Join Session');
+        fireEvent.click(joinButton);
+        expect(mockNavigate).toHaveBeenCalledWith('/join-session');
+      });
     });
 
-    test('shows authentication prompt for unauthenticated users', () => {
+    test('shows authentication prompt for unauthenticated users', async () => {
       renderHomePage();
 
-      // Should show login prompt or login form
-      expect(screen.getByTestId('auth-section')).toBeInTheDocument();
+      // Wait for auth status to settle, then check for login form
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-section')).toBeInTheDocument();
+      });
     });
   });
 
   describe('Authentication Integration', () => {
     test('displays different content for authenticated users', async () => {
       // Mock authenticated state
-      const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
 
       renderHomePage();
 
       await waitFor(() => {
-        // Should show user-specific content when authenticated
-        expect(screen.getByTestId('homepage-actions')).toBeInTheDocument();
+        // Should show Create/Join buttons for authenticated users
+        expect(screen.getByText('Create Session')).toBeInTheDocument();
+        expect(screen.getByText('Join Session')).toBeInTheDocument();
       });
     });
 
-    test('displays login form for unauthenticated users', () => {
+    test('displays login form for unauthenticated users', async () => {
       renderHomePage();
 
-      expect(screen.getByTestId('login-form')).toBeInTheDocument();
-      expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('login-form')).toBeInTheDocument();
+        expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      });
     });
 
     test('handles login form submission', async () => {

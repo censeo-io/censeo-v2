@@ -23,6 +23,12 @@ DATABASES = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF settings for development
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+
 # Logging
 LOGGING = {
     'version': 1,
@@ -51,3 +57,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Session settings for development
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = 'Lax'
+
+# CSRF cookie settings for development
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to read token
+CSRF_USE_SESSIONS = True  # Use session-based CSRF tokens
+CSRF_COOKIE_AGE = None  # Use session age

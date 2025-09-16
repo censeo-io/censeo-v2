@@ -3,11 +3,41 @@
  * Tests for API client configuration and authentication API methods
  */
 
-import { apiClient, authApi } from '../api';
+// Mock axios before importing anything else
+jest.mock('axios', () => ({
+  __esModule: true,
+  default: {
+    create: jest.fn(() => ({
+      defaults: {
+        baseURL: 'http://localhost:8000/api',
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      },
+      interceptors: {
+        request: {
+          use: jest.fn(),
+        },
+        response: {
+          use: jest.fn(),
+        },
+      },
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+    })),
+  },
+}));
 
-// Mock fetch globally
+// Mock fetch globally for auth API methods
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
+
+// Now import after mocking
+import { apiClient, authApi } from '../api';
 
 describe('API Client', () => {
   beforeEach(() => {
