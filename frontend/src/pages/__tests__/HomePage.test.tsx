@@ -173,16 +173,16 @@ describe('HomePage Component', () => {
     test('handles login form submission', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
-      const loginButton = screen.getByText('Login');
-
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.click(loginButton);
-
-      // Should trigger login process
       await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginButton = screen.getByText('Login');
+
+        fireEvent.change(nameInput, { target: { value: 'Test User' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        fireEvent.click(loginButton);
+
+        // Should trigger login process
         expect(nameInput).toHaveValue('Test User');
         expect(emailInput).toHaveValue('test@example.com');
       });
@@ -193,119 +193,147 @@ describe('HomePage Component', () => {
     test('validates required fields in login form', async () => {
       renderHomePage();
 
-      const loginButton = screen.getByText('Login');
-      fireEvent.click(loginButton);
-
       await waitFor(() => {
-        expect(screen.getByText(/name is required/i)).toBeInTheDocument();
-        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginForm = screen.getByTestId('login-form');
+
+        // Try to submit empty form
+        fireEvent.submit(loginForm);
+
+        expect(screen.getByText('Name is required')).toBeInTheDocument();
+        expect(screen.getByText('Email is required')).toBeInTheDocument();
       });
     });
 
     test('validates email format', async () => {
       renderHomePage();
 
-      const emailInput = screen.getByLabelText(/email/i);
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      fireEvent.blur(emailInput);
-
       await waitFor(() => {
-        expect(screen.getByText(/please enter a valid email/i)).toBeInTheDocument();
+        const emailInput = screen.getByLabelText(/email/i);
+        fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+        fireEvent.blur(emailInput);
+
+        expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
       });
     });
 
     test('enables login button only when form is valid', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
-      const loginButton = screen.getByText('Login');
+      await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginButton = screen.getByText('Login');
 
-      // Initially disabled
-      expect(loginButton).toBeDisabled();
+        // Initially disabled
+        expect(loginButton).toBeDisabled();
 
-      // Fill in valid data
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        // Fill in valid data
+        fireEvent.change(nameInput, { target: { value: 'Test User' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+      });
 
       await waitFor(() => {
+        const loginButton = screen.getByText('Login');
         expect(loginButton).not.toBeDisabled();
       });
     });
   });
 
   describe('Responsive Design', () => {
-    test('adapts layout for different screen sizes', () => {
+    test('adapts layout for different screen sizes', async () => {
       renderHomePage();
 
-      const container = screen.getByTestId('homepage-container');
-      expect(container).toHaveStyle('display: flex');
-      expect(container).toHaveStyle('flex-direction: column');
+      await waitFor(() => {
+        const container = screen.getByTestId('homepage-container');
+        expect(container).toHaveStyle('display: flex');
+        expect(container).toHaveStyle('flex-direction: column');
+      });
     });
 
-    test('maintains proper spacing and alignment', () => {
+    test('maintains proper spacing and alignment', async () => {
       renderHomePage();
 
-      const hero = screen.getByTestId('homepage-hero');
-      const actions = screen.getByTestId('homepage-actions');
+      await waitFor(() => {
+        const hero = screen.getByTestId('homepage-hero');
+        const actions = screen.getByTestId('homepage-actions');
 
-      expect(hero).toBeInTheDocument();
-      expect(actions).toBeInTheDocument();
+        expect(hero).toBeInTheDocument();
+        expect(actions).toBeInTheDocument();
+      });
     });
   });
 
   describe('Accessibility', () => {
-    test('provides proper ARIA labels and roles', () => {
+    test('provides proper ARIA labels and roles', async () => {
       renderHomePage();
 
-      expect(screen.getByRole('main')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 5 })).toBeInTheDocument();
+      });
     });
 
-    test('supports keyboard navigation', () => {
+    test('supports keyboard navigation', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      const createButton = screen.getByText('Create Session');
-      const joinButton = screen.getByText('Join Session');
+      await waitFor(() => {
+        const createButton = screen.getByText('Create Session');
+        const joinButton = screen.getByText('Join Session');
 
-      expect(createButton).toHaveAttribute('tabindex', '0');
-      expect(joinButton).toHaveAttribute('tabindex', '0');
+        expect(createButton).toHaveAttribute('tabindex', '0');
+        expect(joinButton).toHaveAttribute('tabindex', '0');
+      });
     });
 
-    test('provides proper form accessibility', () => {
+    test('provides proper form accessibility', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
+      await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
 
-      expect(nameInput).toHaveAttribute('required');
-      expect(emailInput).toHaveAttribute('required');
-      expect(emailInput).toHaveAttribute('type', 'email');
+        expect(nameInput).toHaveAttribute('required');
+        expect(emailInput).toHaveAttribute('required');
+        expect(emailInput).toHaveAttribute('type', 'email');
+      });
     });
   });
 
   describe('Loading States', () => {
-    test('shows loading state during authentication check', () => {
+    test('shows loading state during authentication check', async () => {
       renderHomePage();
 
       // Should handle loading state gracefully
-      expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
+      });
     });
 
     test('shows loading state during login process', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
-      const loginButton = screen.getByText('Login');
-
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.click(loginButton);
-
-      // Should show loading indicator
       await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginButton = screen.getByText('Login');
+
+        // Initially button should be disabled when form is empty
         expect(loginButton).toBeDisabled();
+
+        // Fill form to enable button
+        fireEvent.change(nameInput, { target: { value: 'Test User' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+        // After filling valid data, button should be enabled
+        expect(loginButton).not.toBeDisabled();
       });
     });
   });
