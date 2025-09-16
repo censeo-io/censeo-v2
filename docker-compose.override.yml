@@ -1,8 +1,5 @@
 # Docker Compose override for development
 # This file extends docker-compose.yml with development-specific configurations
-
-version: '3.8'
-
 services:
   backend:
     # Development-specific environment variables
