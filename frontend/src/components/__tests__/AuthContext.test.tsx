@@ -23,6 +23,19 @@ describe('AuthContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    // Set default mock implementations
+    mockedAuthApi.getStatus.mockResolvedValue({
+      authenticated: false,
+      user: null,
+    });
+    mockedAuthApi.login.mockResolvedValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      session_token: 'mock-token',
+      message: 'Login successful',
+    });
+    mockedAuthApi.logout.mockResolvedValue({
+      message: 'Logout successful',
+    });
   });
 
   describe('AuthProvider', () => {
@@ -45,11 +58,16 @@ describe('AuthContext', () => {
       );
     };
 
-    test('provides initial authentication state', () => {
+    test('provides initial authentication state', async () => {
       renderWithProvider();
 
+      // Wait for auth check to complete
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
       expect(screen.getByTestId('is-authenticated')).toHaveTextContent('false');
-      expect(screen.getByTestId('is-loading')).toHaveTextContent('true');
+      expect(screen.getByTestId('is-loading')).toHaveTextContent('false');
       expect(screen.getByTestId('user-email')).toHaveTextContent('No user');
     });
 
@@ -60,6 +78,11 @@ describe('AuthContext', () => {
       });
 
       renderWithProvider();
+
+      // Wait for auth check to complete
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
 
       // Should call getStatus on mount
       expect(mockedAuthApi.getStatus).toHaveBeenCalledTimes(1);
@@ -105,11 +128,7 @@ describe('AuthContext', () => {
       const { result } = renderHook(() => useAuth(), { wrapper });
 
       await act(async () => {
-        try {
-          await result.current.login('Test User', 'invalid@example.com');
-        } catch (error) {
-          expect(error).toBeInstanceOf(Error);
-        }
+        await expect(result.current.login('Test User', 'invalid@example.com')).rejects.toBeInstanceOf(Error);
       });
 
       expect(result.current.isAuthenticated).toBe(false);

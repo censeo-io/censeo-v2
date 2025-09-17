@@ -23,7 +23,7 @@ export interface Session {
   session_id: string;
   name: string;
   facilitator: User;
-  status: 'active' | 'completed' | 'paused';
+  status: "active" | "completed" | "paused";
   participants: SessionParticipant[];
   participant_count: number;
   created_at: string;
