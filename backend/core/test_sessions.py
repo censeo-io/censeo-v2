@@ -794,8 +794,7 @@ class SessionJoinEdgeCasesTestCase(APITestCase):
         self.client.force_login(self.participant)
 
         response = self.client.post(
-            "/api/sessions/invalid-uuid-format/join/",
-            content_type="application/json"
+            "/api/sessions/invalid-uuid-format/join/", content_type="application/json"
         )
 
         # Django URL routing returns 404 for invalid UUIDs
