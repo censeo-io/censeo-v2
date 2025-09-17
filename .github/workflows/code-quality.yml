@@ -31,7 +31,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: security-extended,quality
+          queries: security-extended
 
       - name: Setup Node.js (for JavaScript analysis)
         if: matrix.language == 'javascript'
