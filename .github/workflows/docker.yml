@@ -2,9 +2,9 @@ name: Docker Build & Security
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ dev, staging, prod ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ dev, staging, prod ]
   workflow_dispatch:
 
 env:

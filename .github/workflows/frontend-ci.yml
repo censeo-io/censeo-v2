@@ -2,10 +2,10 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ main, develop, mvp-dev-environment ]
+    branches: [ dev, staging, prod ]
     paths: [ 'frontend/**' ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ dev, staging, prod ]
     paths: [ 'frontend/**' ]
   workflow_dispatch:
 

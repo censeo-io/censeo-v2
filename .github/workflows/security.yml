@@ -2,9 +2,9 @@ name: Security & Dependency Scanning
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ dev, staging, prod ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ dev, staging, prod ]
   schedule:
     # Run weekly on Sundays at 2 AM UTC
     - cron: '0 2 * * 0'
@@ -122,6 +122,6 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: main
+          base: dev
           head: HEAD
           extra_args: --debug --only-verified
