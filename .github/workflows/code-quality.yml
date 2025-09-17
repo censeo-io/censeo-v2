@@ -71,7 +71,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'censeo-io' # Only run on main org repos
+    if: github.repository_owner == 'censeo-io' && vars.ENABLE_SONARCLOUD == 'true' # Only run when enabled and on main org repos
 
     steps:
       - name: Checkout code
