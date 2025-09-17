@@ -3,36 +3,31 @@
  * Handles HTTP requests to the Django backend API
  */
 
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError } from "axios";
 import {
-  LoginRequest,
   LoginResponse,
   AuthStatusResponse,
-  LogoutResponse
-} from '../types/auth';
-import {
-  ApiResponse,
-  ApiError,
-  HealthCheckResponse,
-  ApiRootResponse
-} from '../types/api';
+  LogoutResponse,
+} from "../types/auth";
+import { HealthCheckResponse, ApiRootResponse } from "../types/api";
 import {
   Session,
   CreateSessionRequest,
   CreateSessionResponse,
   JoinSessionResponse,
-  SessionListResponse
-} from '../types/session';
+  SessionListResponse,
+} from "../types/session";
 
 // API base URL from environment or default to localhost
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 // Create axios instance with default configuration
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   withCredentials: true, // Include cookies for session management
 });
@@ -40,11 +35,11 @@ export const apiClient: AxiosInstance = axios.create({
 // Function to get CSRF token from cookies (Django standard approach)
 const getCSRFToken = (): string | null => {
   // Get CSRF token from cookies (Django sets 'csrftoken' cookie)
-  const name = 'csrftoken';
+  const name = "csrftoken";
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || null;
+    return parts.pop()?.split(";").shift() || null;
   }
   return null;
 };
@@ -52,16 +47,20 @@ const getCSRFToken = (): string | null => {
 // Request interceptor to add authentication headers and CSRF token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('session_token');
+    const token = localStorage.getItem("session_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     // Add CSRF token for state-changing requests
-    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+    if (
+      ["post", "put", "patch", "delete"].includes(
+        config.method?.toLowerCase() || "",
+      )
+    ) {
       const csrfToken = getCSRFToken();
       if (csrfToken) {
-        config.headers['X-CSRFToken'] = csrfToken;
+        config.headers["X-CSRFToken"] = csrfToken;
       }
     }
 
@@ -69,7 +68,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor for error handling
@@ -80,13 +79,13 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Unauthorized - clear authentication data
-      localStorage.removeItem('session_token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("session_token");
+      localStorage.removeItem("user");
       // Optionally redirect to login or refresh the page
     }
 
     // Log error for debugging
-    console.error('API Error:', {
+    console.error("API Error:", {
       url: error.config?.url,
       status: error.response?.status,
       data: error.response?.data,
@@ -94,7 +93,7 @@ apiClient.interceptors.response.use(
     });
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Generic API request helper
@@ -117,29 +116,29 @@ export const authApi = {
     const csrfToken = getCSRFToken();
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (csrfToken) {
-      headers['X-CSRFToken'] = csrfToken;
+      headers["X-CSRFToken"] = csrfToken;
     }
 
     const response = await fetch(`${API_BASE_URL}/auth/login/`, {
-      method: 'POST',
+      method: "POST",
       headers,
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({ name, email }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Login failed');
+      throw new Error(data.error || "Login failed");
     }
 
     // Store session token
     if (data.session_token) {
-      localStorage.setItem('session_token', data.session_token);
+      localStorage.setItem("session_token", data.session_token);
     }
 
     return {
@@ -158,45 +157,45 @@ export const authApi = {
     const csrfToken = getCSRFToken();
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (csrfToken) {
-      headers['X-CSRFToken'] = csrfToken;
+      headers["X-CSRFToken"] = csrfToken;
     }
 
     const response = await fetch(`${API_BASE_URL}/auth/logout/`, {
-      method: 'POST',
+      method: "POST",
       headers,
-      credentials: 'include',
+      credentials: "include",
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Logout failed');
+      throw new Error(data.error || "Logout failed");
     }
 
     // Clear local storage
-    localStorage.removeItem('session_token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("session_token");
+    localStorage.removeItem("user");
 
     return data;
   },
 
   async getStatus(): Promise<AuthStatusResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/status/`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Failed to check authentication status');
+      throw new Error(data.error || "Failed to check authentication status");
     }
 
     if (data.authenticated) {
@@ -220,53 +219,52 @@ export const authApi = {
 // General API methods using axios
 export const generalApi = {
   async healthCheck(): Promise<HealthCheckResponse> {
-    return handleApiRequest<HealthCheckResponse>(
-      apiClient.get('/health/')
-    );
+    return handleApiRequest<HealthCheckResponse>(apiClient.get("/health/"));
   },
 
   async getApiRoot(): Promise<ApiRootResponse> {
-    return handleApiRequest<ApiRootResponse>(
-      apiClient.get('/')
-    );
+    return handleApiRequest<ApiRootResponse>(apiClient.get("/"));
   },
 };
 
 // Session API methods
 export const sessionApi = {
-  async createSession(sessionData: CreateSessionRequest): Promise<CreateSessionResponse> {
+  async createSession(
+    sessionData: CreateSessionRequest,
+  ): Promise<CreateSessionResponse> {
     return handleApiRequest<CreateSessionResponse>(
-      apiClient.post('/sessions/', sessionData)
+      apiClient.post("/sessions/", sessionData),
     );
   },
 
   async getSessions(): Promise<SessionListResponse> {
-    return handleApiRequest<SessionListResponse>(
-      apiClient.get('/sessions/')
-    );
+    return handleApiRequest<SessionListResponse>(apiClient.get("/sessions/"));
   },
 
   async getSession(sessionId: string): Promise<Session> {
-    return handleApiRequest<Session>(
-      apiClient.get(`/sessions/${sessionId}/`)
-    );
+    return handleApiRequest<Session>(apiClient.get(`/sessions/${sessionId}/`));
   },
 
   async joinSession(sessionId: string): Promise<JoinSessionResponse> {
     return handleApiRequest<JoinSessionResponse>(
-      apiClient.post(`/sessions/${sessionId}/join/`)
+      apiClient.post(`/sessions/${sessionId}/join/`),
     );
   },
 
-  async leaveSession(sessionId: string): Promise<{ message: string; session_id: string }> {
+  async leaveSession(
+    sessionId: string,
+  ): Promise<{ message: string; session_id: string }> {
     return handleApiRequest<{ message: string; session_id: string }>(
-      apiClient.post(`/sessions/${sessionId}/leave/`)
+      apiClient.post(`/sessions/${sessionId}/leave/`),
     );
   },
 
-  async updateSessionStatus(sessionId: string, status: 'active' | 'completed' | 'paused'): Promise<{ message: string; session: Session }> {
+  async updateSessionStatus(
+    sessionId: string,
+    status: "active" | "completed" | "paused",
+  ): Promise<{ message: string; session: Session }> {
     return handleApiRequest<{ message: string; session: Session }>(
-      apiClient.post(`/sessions/${sessionId}/status/`, { status })
+      apiClient.post(`/sessions/${sessionId}/status/`, { status }),
     );
   },
 };

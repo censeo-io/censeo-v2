@@ -3,75 +3,75 @@
  * Defines the visual design system for the application
  */
 
-import { createTheme, Theme } from '@mui/material/styles';
+import { createTheme, Theme } from "@mui/material/styles";
 
 export const createAppTheme = (): Theme => {
   return createTheme({
     palette: {
-      mode: 'light',
+      mode: "light",
       primary: {
-        main: '#1976d2',
-        light: '#42a5f5',
-        dark: '#1565c0',
-        contrastText: '#ffffff',
+        main: "#1976d2",
+        light: "#42a5f5",
+        dark: "#1565c0",
+        contrastText: "#ffffff",
       },
       secondary: {
-        main: '#9c27b0',
-        light: '#ba68c8',
-        dark: '#7b1fa2',
-        contrastText: '#ffffff',
+        main: "#9c27b0",
+        light: "#ba68c8",
+        dark: "#7b1fa2",
+        contrastText: "#ffffff",
       },
       background: {
-        default: '#fafafa',
-        paper: '#ffffff',
+        default: "#fafafa",
+        paper: "#ffffff",
       },
       text: {
-        primary: 'rgba(0, 0, 0, 0.87)',
-        secondary: 'rgba(0, 0, 0, 0.6)',
+        primary: "rgba(0, 0, 0, 0.87)",
+        secondary: "rgba(0, 0, 0, 0.6)",
       },
     },
     typography: {
       fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
       h1: {
-        fontSize: '2.5rem',
+        fontSize: "2.5rem",
         fontWeight: 500,
         lineHeight: 1.2,
       },
       h2: {
-        fontSize: '2rem',
+        fontSize: "2rem",
         fontWeight: 500,
         lineHeight: 1.3,
       },
       h3: {
-        fontSize: '1.75rem',
+        fontSize: "1.75rem",
         fontWeight: 500,
         lineHeight: 1.4,
       },
       h4: {
-        fontSize: '1.5rem',
+        fontSize: "1.5rem",
         fontWeight: 500,
         lineHeight: 1.4,
       },
       h5: {
-        fontSize: '1.25rem',
+        fontSize: "1.25rem",
         fontWeight: 500,
         lineHeight: 1.5,
       },
       h6: {
-        fontSize: '1rem',
+        fontSize: "1rem",
         fontWeight: 500,
         lineHeight: 1.6,
       },
       body1: {
-        fontSize: '1rem',
+        fontSize: "1rem",
         lineHeight: 1.5,
       },
       body2: {
-        fontSize: '0.875rem',
+        fontSize: "0.875rem",
         lineHeight: 1.43,
       },
       button: {
-        textTransform: 'none',
+        textTransform: "none",
         fontWeight: 500,
       },
     },
@@ -84,15 +84,15 @@ export const createAppTheme = (): Theme => {
         styleOverrides: {
           root: {
             borderRadius: 8,
-            padding: '8px 16px',
-            fontSize: '0.875rem',
+            padding: "8px 16px",
+            fontSize: "0.875rem",
             fontWeight: 500,
-            textTransform: 'none',
+            textTransform: "none",
           },
           contained: {
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            '&:hover': {
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            "&:hover": {
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
             },
           },
         },
@@ -101,14 +101,14 @@ export const createAppTheme = (): Theme => {
         styleOverrides: {
           root: {
             borderRadius: 12,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
           },
         },
       },
       MuiTextField: {
         styleOverrides: {
           root: {
-            '& .MuiOutlinedInput-root': {
+            "& .MuiOutlinedInput-root": {
               borderRadius: 8,
             },
           },
@@ -117,7 +117,7 @@ export const createAppTheme = (): Theme => {
       MuiAppBar: {
         styleOverrides: {
           root: {
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
           },
         },
       },

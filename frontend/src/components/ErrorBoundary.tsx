@@ -3,8 +3,8 @@
  * Catches JavaScript errors anywhere in the child component tree
  */
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Box, Typography, Button, Alert } from '@mui/material';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Box, Typography, Button, Alert } from "@mui/material";
 
 interface Props {
   children: ReactNode;
@@ -30,7 +30,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error("Error caught by boundary:", error, errorInfo);
     this.setState({
       error,
       errorInfo,
@@ -46,32 +46,37 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
             padding: 3,
             gap: 2,
           }}
         >
-          <Alert severity="error" sx={{ maxWidth: 600, width: '100%' }}>
+          <Alert severity="error" sx={{ maxWidth: 600, width: "100%" }}>
             <Typography variant="h6" gutterBottom>
               Something went wrong
             </Typography>
             <Typography variant="body2" sx={{ mb: 2 }}>
-              An unexpected error occurred. You can try refreshing the page or contact support if the problem persists.
+              An unexpected error occurred. You can try refreshing the page or
+              contact support if the problem persists.
             </Typography>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {process.env.NODE_ENV === "development" && this.state.error && (
               <Box sx={{ mt: 2 }}>
-                <Typography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Typography
+                  variant="caption"
+                  component="pre"
+                  sx={{ whiteSpace: "pre-wrap" }}
+                >
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </Typography>
               </Box>
             )}
           </Alert>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2 }}>
             <Button variant="contained" onClick={this.handleReset}>
               Try Again
             </Button>

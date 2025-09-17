@@ -3,8 +3,8 @@
  * Displays session details, participants, and provides session management functionality
  */
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -25,16 +25,16 @@ import {
   Tooltip,
   Card,
   CardContent,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Person as PersonIcon,
   ContentCopy as CopyIcon,
   ExitToApp as LeaveIcon,
   Refresh as RefreshIcon,
-} from '@mui/icons-material';
-import { useAuth } from '../components/auth/AuthContext';
-import { sessionApi } from '../services/api';
-import { Session } from '../types/session';
+} from "@mui/icons-material";
+import { useAuth } from "../components/auth/AuthContext";
+import { sessionApi } from "../services/api";
+import { Session } from "../types/session";
 
 const SessionPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -45,9 +45,9 @@ const SessionPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const loadSession = async () => {
+  const loadSession = useCallback(async () => {
     if (!sessionId) {
-      setError('Invalid session ID');
+      setError("Invalid session ID");
       setLoading(false);
       return;
     }
@@ -58,18 +58,18 @@ const SessionPage: React.FC = () => {
       setError(null);
     } catch (err) {
       if (err instanceof Error) {
-        if (err.message.includes('404') || err.message.includes('not found')) {
-          setError('Session not found or you do not have access to it.');
+        if (err.message.includes("404") || err.message.includes("not found")) {
+          setError("Session not found or you do not have access to it.");
         } else {
           setError(err.message);
         }
       } else {
-        setError('Failed to load session');
+        setError("Failed to load session");
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -77,7 +77,7 @@ const SessionPage: React.FC = () => {
     } else {
       setLoading(false);
     }
-  }, [sessionId, isAuthenticated]);
+  }, [sessionId, isAuthenticated, loadSession]);
 
   const handleCopySessionId = async () => {
     if (sessionId) {
@@ -86,7 +86,7 @@ const SessionPage: React.FC = () => {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch (err) {
-        console.error('Failed to copy session ID:', err);
+        console.error("Failed to copy session ID:", err);
       }
     }
   };
@@ -96,28 +96,28 @@ const SessionPage: React.FC = () => {
 
     // Don't allow facilitator to leave
     if (session.facilitator.id === user?.id) {
-      setError('Facilitators cannot leave their own sessions.');
+      setError("Facilitators cannot leave their own sessions.");
       return;
     }
 
     try {
       await sessionApi.leaveSession(sessionId);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to leave session');
+      setError(err instanceof Error ? err.message : "Failed to leave session");
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'success';
-      case 'completed':
-        return 'default';
-      case 'paused':
-        return 'warning';
+      case "active":
+        return "success";
+      case "completed":
+        return "default";
+      case "paused":
+        return "warning";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -125,10 +125,8 @@ const SessionPage: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Container maxWidth="md">
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Alert severity="warning">
-            Please log in to view this session.
-          </Alert>
+        <Box sx={{ mt: 4, textAlign: "center" }}>
+          <Alert severity="warning">Please log in to view this session.</Alert>
         </Box>
       </Container>
     );
@@ -137,7 +135,7 @@ const SessionPage: React.FC = () => {
   if (loading) {
     return (
       <Container maxWidth="md">
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Box sx={{ mt: 4, textAlign: "center" }}>
           <CircularProgress />
           <Typography variant="body1" sx={{ mt: 2 }}>
             Loading session...
@@ -154,7 +152,7 @@ const SessionPage: React.FC = () => {
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
-          <Button variant="outlined" onClick={() => navigate('/')}>
+          <Button variant="outlined" onClick={() => navigate("/")}>
             Back to Home
           </Button>
         </Box>
@@ -165,10 +163,8 @@ const SessionPage: React.FC = () => {
   if (!session) {
     return (
       <Container maxWidth="md">
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Alert severity="info">
-            Session not found.
-          </Alert>
+        <Box sx={{ mt: 4, textAlign: "center" }}>
+          <Alert severity="info">Session not found.</Alert>
         </Box>
       </Container>
     );
@@ -181,7 +177,14 @@ const SessionPage: React.FC = () => {
       <Box sx={{ mt: 4 }}>
         {/* Session Header */}
         <Paper sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'between', alignItems: 'flex-start', mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "between",
+              alignItems: "flex-start",
+              mb: 2,
+            }}
+          >
             <Box sx={{ flex: 1 }}>
               <Typography variant="h4" component="h1" gutterBottom>
                 {session.name}
@@ -193,7 +196,7 @@ const SessionPage: React.FC = () => {
                 sx={{ mb: 1 }}
               />
             </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Tooltip title="Refresh session data">
                 <IconButton onClick={loadSession}>
                   <RefreshIcon />
@@ -222,11 +225,11 @@ const SessionPage: React.FC = () => {
             </Grid>
           </Grid>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography variant="body2" color="text.secondary">
               Session ID: {sessionId}
             </Typography>
-            <Tooltip title={copySuccess ? 'Copied!' : 'Copy session ID'}>
+            <Tooltip title={copySuccess ? "Copied!" : "Copy session ID"}>
               <IconButton size="small" onClick={handleCopySessionId}>
                 <CopyIcon fontSize="small" />
               </IconButton>
@@ -256,10 +259,16 @@ const SessionPage: React.FC = () => {
                     </ListItemAvatar>
                     <ListItemText
                       primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           {participant.name}
                           {participant.email === session.facilitator.email && (
-                            <Chip label="Facilitator" size="small" color="primary" />
+                            <Chip
+                              label="Facilitator"
+                              size="small"
+                              color="primary"
+                            />
                           )}
                         </Box>
                       }
@@ -280,8 +289,8 @@ const SessionPage: React.FC = () => {
               Session Actions
             </Typography>
 
-            {session.status === 'active' ? (
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            {session.status === "active" ? (
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                 <Button variant="contained" disabled>
                   Start Story Voting (Coming Soon)
                 </Button>
@@ -296,7 +305,8 @@ const SessionPage: React.FC = () => {
               </Box>
             ) : (
               <Alert severity="info">
-                This session is {session.status}. No actions are currently available.
+                This session is {session.status}. No actions are currently
+                available.
               </Alert>
             )}
           </CardContent>

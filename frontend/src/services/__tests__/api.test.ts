@@ -4,6 +4,9 @@
  */
 
 // Mock axios before importing anything else
+// Now import after mocking
+import { apiClient, authApi } from '../api';
+
 jest.mock('axios', () => ({
   __esModule: true,
   default: {
@@ -35,9 +38,6 @@ jest.mock('axios', () => ({
 // Mock fetch globally for auth API methods
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
-
-// Now import after mocking
-import { apiClient, authApi } from '../api';
 
 describe('API Client', () => {
   beforeEach(() => {

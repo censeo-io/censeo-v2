@@ -3,7 +3,7 @@
  * Main layout wrapper with header, navigation, and content area
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -14,11 +14,11 @@ import {
   Menu,
   MenuItem,
   Avatar,
-} from '@mui/material';
-import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from './auth/AuthContext';
-import CenseoLogoImage from './CenseoLogoImage';
+} from "@mui/material";
+import { AccountCircle } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./auth/AuthContext";
+import CenseoLogoImage from "./CenseoLogoImage";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,33 +41,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     try {
       await logout();
       handleMenuClose();
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
   const handleHomeClick = () => {
-    navigate('/');
+    navigate("/");
   };
 
   return (
     <Box
       data-testid="layout-container"
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
       }}
     >
-      <AppBar position="static" data-testid="layout-header" component="header" role="banner">
+      <AppBar
+        position="static"
+        data-testid="layout-header"
+        component="header"
+        role="banner"
+      >
         <Toolbar>
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               flexGrow: 1,
-              cursor: 'pointer',
+              cursor: "pointer",
             }}
             onClick={handleHomeClick}
           >
@@ -75,15 +80,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Typography
               variant="h6"
               component="h1"
-              sx={{ ml: 1, color: 'inherit' }}
+              sx={{ ml: 1, color: "inherit" }}
             >
               Censeo
             </Typography>
           </Box>
 
-          <Box data-testid="navigation-menu" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            data-testid="navigation-menu"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
             {isAuthenticated ? (
-              <Box data-testid="auth-controls" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                data-testid="auth-controls"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
                 <Typography variant="body2" sx={{ mr: 1 }}>
                   Welcome, {user?.name}
                 </Typography>
@@ -103,12 +114,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   open={Boolean(anchorEl)}
                   onClose={handleMenuClose}
                   anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
+                    vertical: "bottom",
+                    horizontal: "right",
                   }}
                   transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   }}
                 >
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>
@@ -116,7 +127,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Box>
             ) : (
               <Box data-testid="auth-controls">
-                <Button color="inherit" onClick={() => navigate('/')}>
+                <Button color="inherit" onClick={() => navigate("/")}>
                   Login
                 </Button>
               </Box>
@@ -131,8 +142,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         data-testid="layout-content"
         sx={{
           flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {children}

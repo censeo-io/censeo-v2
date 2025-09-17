@@ -3,8 +3,8 @@
  * Allows authenticated users to join existing story pointing sessions
  */
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -14,29 +14,30 @@ import {
   Alert,
   Container,
   CircularProgress,
-} from '@mui/material';
-import { useAuth } from '../components/auth/AuthContext';
-import { sessionApi } from '../services/api';
+} from "@mui/material";
+import { useAuth } from "../components/auth/AuthContext";
+import { sessionApi } from "../services/api";
 
 const JoinSessionPage: React.FC = () => {
-  const [sessionId, setSessionId] = useState('');
+  const [sessionId, setSessionId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!sessionId.trim()) {
-      setError('Session ID is required');
+      setError("Session ID is required");
       return;
     }
 
     // Basic UUID validation
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(sessionId.trim())) {
-      setError('Please enter a valid session ID');
+      setError("Please enter a valid session ID");
       return;
     }
 
@@ -50,11 +51,11 @@ const JoinSessionPage: React.FC = () => {
       navigate(`/session/${response.session.session_id}`);
     } catch (err) {
       if (err instanceof Error) {
-        if (err.message.includes('404') || err.message.includes('not found')) {
-          setError('Session not found. Please check the session ID.');
-        } else if (err.message.includes('completed')) {
-          setError('This session has been completed and cannot be joined.');
-        } else if (err.message.includes('already joined')) {
+        if (err.message.includes("404") || err.message.includes("not found")) {
+          setError("Session not found. Please check the session ID.");
+        } else if (err.message.includes("completed")) {
+          setError("This session has been completed and cannot be joined.");
+        } else if (err.message.includes("already joined")) {
           // Still navigate to the session if already joined
           navigate(`/session/${sessionId.trim()}`);
           return;
@@ -62,7 +63,7 @@ const JoinSessionPage: React.FC = () => {
           setError(err.message);
         }
       } else {
-        setError('Failed to join session');
+        setError("Failed to join session");
       }
     } finally {
       setLoading(false);
@@ -73,10 +74,8 @@ const JoinSessionPage: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Alert severity="warning">
-            Please log in to join a session.
-          </Alert>
+        <Box sx={{ mt: 4, textAlign: "center" }}>
+          <Alert severity="warning">Please log in to join a session.</Alert>
         </Box>
       </Container>
     );
@@ -91,7 +90,8 @@ const JoinSessionPage: React.FC = () => {
           </Typography>
 
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Enter the session ID provided by your facilitator to join the story pointing session.
+            Enter the session ID provided by your facilitator to join the story
+            pointing session.
           </Typography>
 
           <Box component="form" onSubmit={handleSubmit}>
@@ -114,7 +114,7 @@ const JoinSessionPage: React.FC = () => {
               </Alert>
             )}
 
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
               <Button
                 type="submit"
                 variant="contained"
@@ -128,14 +128,14 @@ const JoinSessionPage: React.FC = () => {
                     Joining...
                   </>
                 ) : (
-                  'Join Session'
+                  "Join Session"
                 )}
               </Button>
 
               <Button
                 variant="outlined"
                 size="large"
-                onClick={() => navigate('/')}
+                onClick={() => navigate("/")}
                 disabled={loading}
               >
                 Cancel
@@ -143,7 +143,7 @@ const JoinSessionPage: React.FC = () => {
             </Box>
           </Box>
 
-          <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+          <Box sx={{ mt: 3, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
             <Typography variant="subtitle2" gutterBottom>
               As a participant, you will be able to:
             </Typography>

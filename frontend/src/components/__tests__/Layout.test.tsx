@@ -109,13 +109,11 @@ describe('Layout Component', () => {
 
       renderLayout();
 
-      await waitFor(() => {
-        const menuButton = screen.getByTestId('menu-button');
-        fireEvent.click(menuButton);
+      const menuButton = await screen.findByTestId('menu-button');
+      fireEvent.click(menuButton);
 
-        // Should toggle menu visibility or trigger navigation
-        expect(mockNavigate).toHaveBeenCalledTimes(0); // Initially no navigation
-      });
+      // Should toggle menu visibility or trigger navigation
+      expect(mockNavigate).toHaveBeenCalledTimes(0); // Initially no navigation
     });
   });
 
