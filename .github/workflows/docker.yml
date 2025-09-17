@@ -131,6 +131,8 @@ jobs:
           curl -f http://localhost:3000 || exit 1
 
           echo "✅ Docker Compose integration test passed"
+        env:
+          SECRET_KEY: test-secret-key-for-ci
 
       - name: Cleanup
         if: always()
