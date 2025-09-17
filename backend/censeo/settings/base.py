@@ -73,16 +73,27 @@ WSGI_APPLICATION = 'censeo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DATABASE_NAME', default='censeo_dev'),
-        'USER': config('DATABASE_USER', default='censeo_user'),
-        'PASSWORD': config('DATABASE_PASSWORD', default='censeo_dev_password'),
-        'HOST': config('DATABASE_HOST', default='localhost'),
-        'PORT': config('DATABASE_PORT', default='5432'),
+# Database configuration
+DATABASE_ENGINE = config('DATABASE_ENGINE', default='django.db.backends.postgresql')
+
+if DATABASE_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': config('DATABASE_NAME', default=BASE_DIR / 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DATABASE_ENGINE,
+            'NAME': config('DATABASE_NAME', default='censeo_dev'),
+            'USER': config('DATABASE_USER', default='censeo_user'),
+            'PASSWORD': config('DATABASE_PASSWORD', default='censeo_dev_password'),
+            'HOST': config('DATABASE_HOST', default='localhost'),
+            'PORT': config('DATABASE_PORT', default='5432'),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -113,6 +113,9 @@ jobs:
         run: |
           cd backend
           python -m pytest --cov=. --cov-report=xml
+        env:
+          DATABASE_ENGINE: django.db.backends.sqlite3
+          DATABASE_NAME: ":memory:"
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
