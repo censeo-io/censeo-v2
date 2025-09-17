@@ -58,9 +58,9 @@ def mock_login(request):
             status=status.HTTP_200_OK,
         )
 
-    except Exception as e:
+    except Exception:
         return Response(
-            {"error": f"Login failed: {e!s}"},
+            {"error": "Login failed due to an internal error. Please try again."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
