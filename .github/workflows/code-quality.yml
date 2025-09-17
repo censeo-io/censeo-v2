@@ -118,6 +118,8 @@ jobs:
           DATABASE_NAME: ":memory:"
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: false
+          CORS_ALLOWED_ORIGINS: https://localhost:3000
+          CSRF_TRUSTED_ORIGINS: https://localhost:3000
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master

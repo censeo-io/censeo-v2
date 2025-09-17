@@ -94,7 +94,7 @@ jobs:
           if [ "${{ matrix.service }}" = "frontend" ]; then
             docker run --rm ${{ fromJSON(steps.meta.outputs.json).tags[0] }} npm test -- --watchAll=false --ci
           else
-            docker run --rm ${{ fromJSON(steps.meta.outputs.json).tags[0] }} python manage.py check
+            docker run --rm -e SECRET_KEY=test-secret-key-for-ci -e CORS_ALLOWED_ORIGINS=https://localhost:3000 -e CSRF_TRUSTED_ORIGINS=https://localhost:3000 ${{ fromJSON(steps.meta.outputs.json).tags[0] }} python manage.py check
           fi
 
       - name: Push Docker image
@@ -133,6 +133,8 @@ jobs:
           echo "✅ Docker Compose integration test passed"
         env:
           SECRET_KEY: test-secret-key-for-ci
+          CORS_ALLOWED_ORIGINS: https://localhost:3000
+          CSRF_TRUSTED_ORIGINS: https://localhost:3000
 
       - name: Cleanup
         if: always()
