@@ -120,11 +120,11 @@ jobs:
 
       - name: Test Docker Compose setup
         run: |
-          docker-compose -f docker-compose.yml up -d --build
+          docker compose -f docker-compose.yml up -d --build
           sleep 30
 
           # Test backend health
-          docker-compose exec -T backend python manage.py check
+          docker compose exec -T backend python manage.py check
 
           # Test that services are running
           curl -f http://localhost:8000/api/health/ || exit 1
@@ -134,4 +134,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
