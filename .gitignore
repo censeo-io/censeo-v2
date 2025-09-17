@@ -52,3 +52,4 @@ postgres_data/
 # Test cache
 .pytest_cache/
 .cache/
+job-logs.txt

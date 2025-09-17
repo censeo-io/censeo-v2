@@ -74,7 +74,8 @@ jobs:
           python manage.py check
           echo "✅ Django system checks passed"
         env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          DATABASE_ENGINE: django.db.backends.sqlite3
+          DATABASE_NAME: ":memory:"
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: false
 
@@ -83,7 +84,8 @@ jobs:
           python manage.py makemigrations --check --dry-run
           echo "✅ No missing migrations detected"
         env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          DATABASE_ENGINE: django.db.backends.sqlite3
+          DATABASE_NAME: ":memory:"
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: false
 
@@ -92,7 +94,8 @@ jobs:
           python -m pytest -xvs --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing
           echo "✅ All tests passed with coverage"
         env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          DATABASE_ENGINE: django.db.backends.sqlite3
+          DATABASE_NAME: ":memory:"
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: false
 
@@ -110,7 +113,8 @@ jobs:
           python manage.py check --deploy
           echo "✅ Django security checks passed"
         env:
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          DATABASE_ENGINE: django.db.backends.sqlite3
+          DATABASE_NAME: ":memory:"
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: false
 
