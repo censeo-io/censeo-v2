@@ -11,6 +11,14 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 [tool.ruff]
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.10
+target-version = "py310"
+
+[tool.ruff.lint]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 select = [
     "E",  # pycodestyle errors
@@ -29,24 +37,19 @@ select = [
 ]
 
 ignore = [
-    "D100", # Missing docstring in public module
-    "D101", # Missing docstring in public class
-    "D102", # Missing docstring in public method
-    "D103", # Missing docstring in public function
-    "D104", # Missing docstring in public package
-    "D105", # Missing docstring in magic method
-    "D106", # Missing docstring in public nested class
-    "D107", # Missing docstring in `__init__`
-    "E501", # Line too long (handled by formatter)
-    "B008", # Do not perform function calls in argument defaults
+    # Django-specific patterns
+    "F403", # Star imports (common in Django settings)
+    "F405", # Undefined names from star imports (common in Django settings)
+    "B008", # Do not perform function calls in argument defaults (Django patterns)
+    "RUF012", # Mutable class attributes (Django Meta classes)
+    # Docstring rules - can be enabled gradually for code quality
+    "D100", "D101", "D102", "D104", "D105", "D106", # Missing docstrings
+    "D200", "D205", "D415", # Docstring formatting
+    # Line length (handled by formatter, some Django names are long)
+    "E501",
+    # Test quality improvements (can fix separately)
+    "B017", # assertRaises(Exception) too broad
 ]
-
-# Same as Black.
-line-length = 88
-indent-width = 4
-
-# Assume Python 3.10
-target-version = "py310"
 
 [tool.ruff.format]
 # Like Black, use double quotes for strings.
@@ -62,10 +65,8 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint.isort]
-known-django = ["django"]
-known-third-party = ["rest_framework", "corsheaders"]
+known-third-party = ["django", "rest_framework", "corsheaders"]
 known-first-party = ["core", "censeo"]
-section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
