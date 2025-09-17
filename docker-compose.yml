@@ -29,6 +29,7 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=1
+      - SECRET_KEY=${SECRET_KEY}
       - DATABASE_NAME=censeo_dev
       - DATABASE_USER=censeo_user
       - DATABASE_PASSWORD=censeo_dev_password

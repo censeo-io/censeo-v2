@@ -137,8 +137,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -f backend/Dockerfile.dev -t censeo-backend:test .
+          docker build -f Dockerfile.dev -t censeo-backend:test .
           echo "✅ Docker build successful"
+        working-directory: backend
 
       - name: Test Docker container
         run: |

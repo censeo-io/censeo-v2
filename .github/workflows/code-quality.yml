@@ -116,6 +116,8 @@ jobs:
         env:
           DATABASE_ENGINE: django.db.backends.sqlite3
           DATABASE_NAME: ":memory:"
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: false
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
