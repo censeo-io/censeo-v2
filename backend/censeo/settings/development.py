@@ -7,17 +7,20 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DATABASE_NAME', default='censeo_dev'),
-        'USER': config('DATABASE_USER', default='censeo_user'),
-        'PASSWORD': config('DATABASE_PASSWORD', default='censeo_dev_password'),
-        'HOST': config('DATABASE_HOST', default='database'),  # Docker service name
-        'PORT': config('DATABASE_PORT', default='5432'),
+# Database configuration
+# Override only if we need PostgreSQL specifically for development
+# Allow environment variables to switch to SQLite for testing
+if config('DATABASE_ENGINE', default='') != 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DATABASE_NAME', default='censeo_dev'),
+            'USER': config('DATABASE_USER', default='censeo_user'),
+            'PASSWORD': config('DATABASE_PASSWORD', default='censeo_dev_password'),
+            'HOST': config('DATABASE_HOST', default='database'),  # Docker service name
+            'PORT': config('DATABASE_PORT', default='5432'),
+        }
     }
-}
 
 # CORS settings for development
 CORS_ALLOW_ALL_ORIGINS = True
