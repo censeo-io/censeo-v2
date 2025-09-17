@@ -97,12 +97,13 @@ jobs:
           DEBUG: false
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           directory: backend
           flags: backend
           name: backend-coverage
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Check Django security
         run: |
@@ -115,7 +116,7 @@ jobs:
 
       - name: Archive coverage reports
         if: matrix.python-version == '3.11'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
           path: backend/htmlcov/
