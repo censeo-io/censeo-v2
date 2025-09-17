@@ -63,6 +63,8 @@ line-ending = "auto"
 
 [tool.ruff.lint.isort]
 known-django = ["django"]
+known-third-party = ["rest_framework", "corsheaders"]
+known-first-party = ["core", "censeo"]
 section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.lint.pydocstyle]
