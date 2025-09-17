@@ -8,14 +8,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import login, logout
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
+from django.middleware.csrf import get_token
 from .models import User
 import uuid
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@ensure_csrf_cookie
 def mock_login(request):
     """
     Mock login endpoint for development.
@@ -76,6 +78,7 @@ def mock_logout(request):
     }, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@ensure_csrf_cookie
 def auth_status(request):
     """
     Check authentication status.
@@ -104,6 +107,7 @@ def health_check(request):
         'service': 'censeo-backend',
         'version': '1.0.0'
     }, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

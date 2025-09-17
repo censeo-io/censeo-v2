@@ -11,6 +11,9 @@ import { AuthProvider } from './components/auth/AuthContext';
 import { createAppTheme } from './theme/theme';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
+import CreateSessionPage from './pages/CreateSessionPage';
+import JoinSessionPage from './pages/JoinSessionPage';
+import SessionPage from './pages/SessionPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const theme = createAppTheme();
@@ -36,8 +39,9 @@ const App: React.FC = () => {
               <Layout>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
-                  <Route path="/create-session" element={<div>Create Session (Coming Soon)</div>} />
-                  <Route path="/join-session" element={<div>Join Session (Coming Soon)</div>} />
+                  <Route path="/create-session" element={<CreateSessionPage />} />
+                  <Route path="/join-session" element={<JoinSessionPage />} />
+                  <Route path="/session/:sessionId" element={<SessionPage />} />
                   <Route path="*" element={<div>Page Not Found</div>} />
                 </Routes>
               </Layout>

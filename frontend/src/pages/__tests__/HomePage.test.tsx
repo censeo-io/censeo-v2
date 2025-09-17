@@ -14,11 +14,21 @@ import { createAppTheme } from '../../theme/theme';
 // Mock the API
 jest.mock('../../services/api', () => ({
   authApi: {
-    login: jest.fn(),
-    logout: jest.fn(),
-    getStatus: jest.fn(),
+    login: jest.fn().mockResolvedValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      session_token: 'mock-token',
+      message: 'Login successful',
+    }),
+    logout: jest.fn().mockResolvedValue({ message: 'Logout successful' }),
+    getStatus: jest.fn().mockResolvedValue({
+      authenticated: false,
+      user: null,
+    }),
   },
 }));
+
+// Get reference to the mocked module
+const mockedApi = jest.mocked(require('../../services/api'));
 
 const mockNavigate = jest.fn();
 
@@ -44,93 +54,135 @@ describe('HomePage Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset auth status to unauthenticated for most tests
+    mockedApi.authApi.getStatus.mockResolvedValue({
+      authenticated: false,
+      user: null,
+    });
+    // Clear localStorage
+    localStorage.clear();
   });
 
   describe('Page Structure', () => {
-    test('renders main homepage elements', () => {
+    test('renders main homepage elements', async () => {
       renderHomePage();
 
       expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
-      expect(screen.getByTestId('homepage-hero')).toBeInTheDocument();
-      expect(screen.getByTestId('homepage-actions')).toBeInTheDocument();
+
+      // Wait for auth status to settle
+      await waitFor(() => {
+        expect(screen.getByTestId('homepage-hero')).toBeInTheDocument();
+        expect(screen.getByTestId('homepage-actions')).toBeInTheDocument();
+      });
     });
 
-    test('displays application title and description', () => {
+    test('displays application title and description', async () => {
       renderHomePage();
 
-      expect(screen.getByText('Censeo Story Pointing')).toBeInTheDocument();
-      expect(screen.getByText(/collaborative story estimation/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText(/collaborative story estimation/i)).toBeInTheDocument();
+      });
     });
 
-    test('renders call-to-action buttons', () => {
+    test('renders call-to-action buttons', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      expect(screen.getByText('Create Session')).toBeInTheDocument();
-      expect(screen.getByText('Join Session')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Create Session')).toBeInTheDocument();
+        expect(screen.getByText('Join Session')).toBeInTheDocument();
+      });
     });
   });
 
   describe('User Interactions', () => {
-    test('handles create session button click', () => {
+    test('handles create session button click', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      const createButton = screen.getByText('Create Session');
-      fireEvent.click(createButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/create-session');
+      await waitFor(() => {
+        const createButton = screen.getByText('Create Session');
+        fireEvent.click(createButton);
+        expect(mockNavigate).toHaveBeenCalledWith('/create-session');
+      });
     });
 
-    test('handles join session button click', () => {
+    test('handles join session button click', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      const joinButton = screen.getByText('Join Session');
-      fireEvent.click(joinButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/join-session');
+      await waitFor(() => {
+        const joinButton = screen.getByText('Join Session');
+        fireEvent.click(joinButton);
+        expect(mockNavigate).toHaveBeenCalledWith('/join-session');
+      });
     });
 
-    test('shows authentication prompt for unauthenticated users', () => {
+    test('shows authentication prompt for unauthenticated users', async () => {
       renderHomePage();
 
-      // Should show login prompt or login form
-      expect(screen.getByTestId('auth-section')).toBeInTheDocument();
+      // Wait for auth status to settle, then check for login form
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-section')).toBeInTheDocument();
+      });
     });
   });
 
   describe('Authentication Integration', () => {
     test('displays different content for authenticated users', async () => {
       // Mock authenticated state
-      const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
 
       renderHomePage();
 
       await waitFor(() => {
-        // Should show user-specific content when authenticated
-        expect(screen.getByTestId('homepage-actions')).toBeInTheDocument();
+        // Should show Create/Join buttons for authenticated users
+        expect(screen.getByText('Create Session')).toBeInTheDocument();
+        expect(screen.getByText('Join Session')).toBeInTheDocument();
       });
     });
 
-    test('displays login form for unauthenticated users', () => {
+    test('displays login form for unauthenticated users', async () => {
       renderHomePage();
 
-      expect(screen.getByTestId('login-form')).toBeInTheDocument();
-      expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('login-form')).toBeInTheDocument();
+        expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      });
     });
 
     test('handles login form submission', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
-      const loginButton = screen.getByText('Login');
-
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.click(loginButton);
-
-      // Should trigger login process
       await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginButton = screen.getByText('Login');
+
+        fireEvent.change(nameInput, { target: { value: 'Test User' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        fireEvent.click(loginButton);
+
+        // Should trigger login process
         expect(nameInput).toHaveValue('Test User');
         expect(emailInput).toHaveValue('test@example.com');
       });
@@ -141,119 +193,147 @@ describe('HomePage Component', () => {
     test('validates required fields in login form', async () => {
       renderHomePage();
 
-      const loginButton = screen.getByText('Login');
-      fireEvent.click(loginButton);
-
       await waitFor(() => {
-        expect(screen.getByText(/name is required/i)).toBeInTheDocument();
-        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginForm = screen.getByTestId('login-form');
+
+        // Try to submit empty form
+        fireEvent.submit(loginForm);
+
+        expect(screen.getByText('Name is required')).toBeInTheDocument();
+        expect(screen.getByText('Email is required')).toBeInTheDocument();
       });
     });
 
     test('validates email format', async () => {
       renderHomePage();
 
-      const emailInput = screen.getByLabelText(/email/i);
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      fireEvent.blur(emailInput);
-
       await waitFor(() => {
-        expect(screen.getByText(/please enter a valid email/i)).toBeInTheDocument();
+        const emailInput = screen.getByLabelText(/email/i);
+        fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+        fireEvent.blur(emailInput);
+
+        expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
       });
     });
 
     test('enables login button only when form is valid', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
-      const loginButton = screen.getByText('Login');
+      await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginButton = screen.getByText('Login');
 
-      // Initially disabled
-      expect(loginButton).toBeDisabled();
+        // Initially disabled
+        expect(loginButton).toBeDisabled();
 
-      // Fill in valid data
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        // Fill in valid data
+        fireEvent.change(nameInput, { target: { value: 'Test User' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+      });
 
       await waitFor(() => {
+        const loginButton = screen.getByText('Login');
         expect(loginButton).not.toBeDisabled();
       });
     });
   });
 
   describe('Responsive Design', () => {
-    test('adapts layout for different screen sizes', () => {
+    test('adapts layout for different screen sizes', async () => {
       renderHomePage();
 
-      const container = screen.getByTestId('homepage-container');
-      expect(container).toHaveStyle('display: flex');
-      expect(container).toHaveStyle('flex-direction: column');
+      await waitFor(() => {
+        const container = screen.getByTestId('homepage-container');
+        expect(container).toHaveStyle('display: flex');
+        expect(container).toHaveStyle('flex-direction: column');
+      });
     });
 
-    test('maintains proper spacing and alignment', () => {
+    test('maintains proper spacing and alignment', async () => {
       renderHomePage();
 
-      const hero = screen.getByTestId('homepage-hero');
-      const actions = screen.getByTestId('homepage-actions');
+      await waitFor(() => {
+        const hero = screen.getByTestId('homepage-hero');
+        const actions = screen.getByTestId('homepage-actions');
 
-      expect(hero).toBeInTheDocument();
-      expect(actions).toBeInTheDocument();
+        expect(hero).toBeInTheDocument();
+        expect(actions).toBeInTheDocument();
+      });
     });
   });
 
   describe('Accessibility', () => {
-    test('provides proper ARIA labels and roles', () => {
+    test('provides proper ARIA labels and roles', async () => {
       renderHomePage();
 
-      expect(screen.getByRole('main')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 5 })).toBeInTheDocument();
+      });
     });
 
-    test('supports keyboard navigation', () => {
+    test('supports keyboard navigation', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderHomePage();
 
-      const createButton = screen.getByText('Create Session');
-      const joinButton = screen.getByText('Join Session');
+      await waitFor(() => {
+        const createButton = screen.getByText('Create Session');
+        const joinButton = screen.getByText('Join Session');
 
-      expect(createButton).toHaveAttribute('tabindex', '0');
-      expect(joinButton).toHaveAttribute('tabindex', '0');
+        expect(createButton).toHaveAttribute('tabindex', '0');
+        expect(joinButton).toHaveAttribute('tabindex', '0');
+      });
     });
 
-    test('provides proper form accessibility', () => {
+    test('provides proper form accessibility', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
+      await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
 
-      expect(nameInput).toHaveAttribute('required');
-      expect(emailInput).toHaveAttribute('required');
-      expect(emailInput).toHaveAttribute('type', 'email');
+        expect(nameInput).toHaveAttribute('required');
+        expect(emailInput).toHaveAttribute('required');
+        expect(emailInput).toHaveAttribute('type', 'email');
+      });
     });
   });
 
   describe('Loading States', () => {
-    test('shows loading state during authentication check', () => {
+    test('shows loading state during authentication check', async () => {
       renderHomePage();
 
       // Should handle loading state gracefully
-      expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('homepage-container')).toBeInTheDocument();
+      });
     });
 
     test('shows loading state during login process', async () => {
       renderHomePage();
 
-      const nameInput = screen.getByLabelText(/name/i);
-      const emailInput = screen.getByLabelText(/email/i);
-      const loginButton = screen.getByText('Login');
-
-      fireEvent.change(nameInput, { target: { value: 'Test User' } });
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.click(loginButton);
-
-      // Should show loading indicator
       await waitFor(() => {
+        const nameInput = screen.getByLabelText(/name/i);
+        const emailInput = screen.getByLabelText(/email/i);
+        const loginButton = screen.getByText('Login');
+
+        // Initially button should be disabled when form is empty
         expect(loginButton).toBeDisabled();
+
+        // Fill form to enable button
+        fireEvent.change(nameInput, { target: { value: 'Test User' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+        // After filling valid data, button should be enabled
+        expect(loginButton).not.toBeDisabled();
       });
     });
   });

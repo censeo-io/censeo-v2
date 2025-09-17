@@ -33,13 +33,13 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
     - [x] 3.5 Implement basic authentication flow (mock login)
     - [x] 3.6 Verify frontend can communicate with backend
 
-- [ ] 4. **Basic Session Management**
-    - [ ] 4.1 Write tests for session creation and join functionality
-    - [ ] 4.2 Implement session creation API endpoint
-    - [ ] 4.3 Implement session join API endpoint
-    - [ ] 4.4 Create session management UI components
-    - [ ] 4.5 Add participant display and basic session state
-    - [ ] 4.6 Verify complete session creation and join workflow
+- [x] 4. **Basic Session Management**
+    - [x] 4.1 Write tests for session creation and join functionality
+    - [x] 4.2 Implement session creation API endpoint
+    - [x] 4.3 Implement session join API endpoint
+    - [x] 4.4 Create session management UI components
+    - [x] 4.5 Add participant display and basic session state
+    - [x] 4.6 Verify complete session creation and join workflow
 
 ### Phase B: Story Management and Voting System
 

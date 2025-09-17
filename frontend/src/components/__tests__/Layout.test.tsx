@@ -4,11 +4,31 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import Layout from '../Layout';
+import { AuthProvider } from '../auth/AuthContext';
 import { createAppTheme } from '../../theme/theme';
+
+// Mock the API
+jest.mock('../../services/api', () => ({
+  authApi: {
+    login: jest.fn().mockResolvedValue({
+      user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      session_token: 'mock-token',
+      message: 'Login successful',
+    }),
+    logout: jest.fn().mockResolvedValue({ message: 'Logout successful' }),
+    getStatus: jest.fn().mockResolvedValue({
+      authenticated: false,
+      user: null,
+    }),
+  },
+}));
+
+// Get reference to the mocked module
+const mockedApi = jest.mocked(require('../../services/api'));
 
 const mockNavigate = jest.fn();
 
@@ -24,7 +44,9 @@ describe('Layout Component', () => {
     return render(
       <MemoryRouter>
         <ThemeProvider theme={theme}>
-          <Layout>{children}</Layout>
+          <AuthProvider>
+            <Layout>{children}</Layout>
+          </AuthProvider>
         </ThemeProvider>
       </MemoryRouter>
     );
@@ -32,6 +54,13 @@ describe('Layout Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset auth status to unauthenticated for most tests
+    mockedApi.authApi.getStatus.mockResolvedValue({
+      authenticated: false,
+      user: null,
+    });
+    // Clear localStorage
+    localStorage.clear();
   });
 
   describe('Layout Structure', () => {
@@ -71,14 +100,22 @@ describe('Layout Component', () => {
       expect(screen.getByTestId('navigation-menu')).toBeInTheDocument();
     });
 
-    test('handles navigation menu interactions', () => {
+    test('handles navigation menu interactions', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderLayout();
 
-      const menuButton = screen.getByTestId('menu-button');
-      fireEvent.click(menuButton);
+      await waitFor(() => {
+        const menuButton = screen.getByTestId('menu-button');
+        fireEvent.click(menuButton);
 
-      // Should toggle menu visibility or trigger navigation
-      expect(mockNavigate).toHaveBeenCalledTimes(0); // Initially no navigation
+        // Should toggle menu visibility or trigger navigation
+        expect(mockNavigate).toHaveBeenCalledTimes(0); // Initially no navigation
+      });
     });
   });
 
@@ -130,13 +167,21 @@ describe('Layout Component', () => {
       expect(appTitle).toHaveTextContent('Censeo');
     });
 
-    test('supports keyboard navigation', () => {
+    test('supports keyboard navigation', async () => {
+      // Mock authenticated state for this test
+      mockedApi.authApi.getStatus.mockResolvedValue({
+        authenticated: true,
+        user: { id: '1', name: 'Test User', email: 'test@example.com' },
+      });
+
       renderLayout();
 
-      const menuButton = screen.getByTestId('menu-button');
+      await waitFor(() => {
+        const menuButton = screen.getByTestId('menu-button');
 
-      // Should be focusable
-      expect(menuButton).toHaveAttribute('tabindex', '0');
+        // Should be focusable
+        expect(menuButton).toHaveAttribute('tabindex', '0');
+      });
     });
   });
 });

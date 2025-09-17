@@ -92,6 +92,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   onClick={handleMenuOpen}
                   aria-label="account menu"
                   tabIndex={0}
+                  data-testid="menu-button"
                 >
                   <Avatar sx={{ width: 32, height: 32 }}>
                     <AccountCircle />
