@@ -1,0 +1,141 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop, mvp-dev-environment ]
+    paths: [ 'backend/**' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'backend/**' ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  backend-quality:
+    name: Backend Code Quality
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ Dependencies installed successfully"
+
+      - name: Run Ruff linting
+        run: |
+          ruff check . --output-format=github
+          echo "✅ Ruff linting passed"
+
+      - name: Run Ruff formatting check
+        run: |
+          ruff format --check .
+          if [ $? -ne 0 ]; then
+            echo "❌ Code is not properly formatted"
+            echo "💡 Run 'ruff format .' to fix formatting issues"
+            exit 1
+          fi
+          echo "✅ Code formatting is correct"
+
+      - name: Run Django system checks
+        run: |
+          python manage.py check
+          echo "✅ Django system checks passed"
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: false
+
+      - name: Run Django migrations check
+        run: |
+          python manage.py makemigrations --check --dry-run
+          echo "✅ No missing migrations detected"
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: false
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest -xvs --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing
+          echo "✅ All tests passed with coverage"
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: false
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: backend
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+      - name: Check Django security
+        run: |
+          python manage.py check --deploy
+          echo "✅ Django security checks passed"
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: false
+
+      - name: Archive coverage reports
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage
+          path: backend/htmlcov/
+          retention-days: 7
+
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: backend-quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -f backend/Dockerfile.dev -t censeo-backend:test .
+          echo "✅ Docker build successful"
+
+      - name: Test Docker container
+        run: |
+          docker run --rm censeo-backend:test python manage.py check
+          echo "✅ Docker container runs successfully"
