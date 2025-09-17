@@ -53,3 +53,7 @@ postgres_data/
 .pytest_cache/
 .cache/
 job-logs.txt
+
+# Coverage reports
+backend/coverage.xml
+backend/htmlcov/

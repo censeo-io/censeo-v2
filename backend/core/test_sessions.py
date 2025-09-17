@@ -485,3 +485,318 @@ class SessionModelTestCase(TestCase):
         # Try to add same participant again - should raise IntegrityError
         with self.assertRaises(Exception):
             SessionParticipant.objects.create(session=session, user=participant)
+
+
+class SessionParticipantsTestCase(APITestCase):
+    """Test cases for session participants endpoint."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.client = Client()
+
+        self.facilitator = User.objects.create_user(
+            email="facilitator@example.com",
+            first_name="John",
+            last_name="Doe",
+            password="testpass123",
+        )
+
+        self.participant1 = User.objects.create_user(
+            email="participant1@example.com",
+            first_name="Jane",
+            last_name="Smith",
+            password="testpass123",
+        )
+
+        self.participant2 = User.objects.create_user(
+            email="participant2@example.com",
+            first_name="Bob",
+            last_name="Johnson",
+            password="testpass123",
+        )
+
+        # Create test session
+        self.session = Session.objects.create(
+            name="Test Session", facilitator=self.facilitator
+        )
+
+        # Add participants
+        SessionParticipant.objects.create(session=self.session, user=self.facilitator)
+        SessionParticipant.objects.create(session=self.session, user=self.participant1)
+
+    def test_get_session_participants_success(self):
+        """Test getting session participants."""
+        self.client.force_login(self.facilitator)
+
+        response = self.client.get(f"/api/sessions/{self.session.id}/participants/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertIn("session_id", data)
+        self.assertIn("session_name", data)
+        self.assertIn("participants", data)
+        self.assertIn("count", data)
+
+        self.assertEqual(data["session_id"], str(self.session.id))
+        self.assertEqual(data["session_name"], "Test Session")
+        self.assertEqual(data["count"], 2)
+
+        # Check participant data
+        participants = data["participants"]
+        participant_emails = [p["email"] for p in participants]
+        self.assertIn("facilitator@example.com", participant_emails)
+        self.assertIn("participant1@example.com", participant_emails)
+
+    def test_get_session_participants_invalid_session_id(self):
+        """Test getting participants with invalid session ID."""
+        self.client.force_login(self.facilitator)
+
+        response = self.client.get("/api/sessions/invalid-id/participants/")
+
+        # Django URL routing returns 404 for invalid UUIDs
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_session_participants_no_access(self):
+        """Test getting participants when user has no access to session."""
+        self.client.force_login(self.participant2)  # Not in session
+
+        response = self.client.get(f"/api/sessions/{self.session.id}/participants/")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        data = response.json()
+        self.assertIn("error", data)
+        self.assertIn("You do not have access to this session", data["error"])
+
+    def test_get_session_participants_unauthenticated(self):
+        """Test getting participants without authentication."""
+        response = self.client.get(f"/api/sessions/{self.session.id}/participants/")
+
+        self.assertIn(
+            response.status_code,
+            [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
+        )
+
+
+class SessionLeaveTestCase(APITestCase):
+    """Test cases for leaving sessions."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.client = Client()
+
+        self.facilitator = User.objects.create_user(
+            email="facilitator@example.com",
+            first_name="John",
+            last_name="Doe",
+            password="testpass123",
+        )
+
+        self.participant = User.objects.create_user(
+            email="participant@example.com",
+            first_name="Jane",
+            last_name="Smith",
+            password="testpass123",
+        )
+
+        # Create test session
+        self.session = Session.objects.create(
+            name="Test Session", facilitator=self.facilitator
+        )
+
+        # Add participants
+        SessionParticipant.objects.create(session=self.session, user=self.facilitator)
+        SessionParticipant.objects.create(session=self.session, user=self.participant)
+
+    def test_leave_session_success(self):
+        """Test successfully leaving a session."""
+        self.client.force_login(self.participant)
+
+        response = self.client.post(f"/api/sessions/{self.session.id}/leave/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertIn("message", data)
+        self.assertIn("session_id", data)
+        self.assertIn("left the session", data["message"])
+
+        # Verify participant is marked as inactive
+        participant_record = SessionParticipant.objects.get(
+            session=self.session, user=self.participant
+        )
+        self.assertFalse(participant_record.is_active)
+
+    def test_leave_session_facilitator_cannot_leave(self):
+        """Test that facilitator cannot leave their own session."""
+        self.client.force_login(self.facilitator)
+
+        response = self.client.post(f"/api/sessions/{self.session.id}/leave/")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.json()
+        self.assertIn("error", data)
+        self.assertIn("Facilitators cannot leave their own sessions", data["error"])
+
+    def test_leave_session_not_participant(self):
+        """Test leaving session when not a participant."""
+        other_user = User.objects.create_user(
+            email="other@example.com",
+            first_name="Other",
+            last_name="User",
+            password="testpass123",
+        )
+        self.client.force_login(other_user)
+
+        response = self.client.post(f"/api/sessions/{self.session.id}/leave/")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.json()
+        self.assertIn("error", data)
+        self.assertIn("You are not a participant in this session", data["error"])
+
+    def test_leave_session_invalid_session_id(self):
+        """Test leaving session with invalid ID."""
+        self.client.force_login(self.participant)
+
+        response = self.client.post("/api/sessions/invalid-id/leave/")
+
+        # Django URL routing returns 404 for invalid UUIDs
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class SessionStatusUpdateTestCase(APITestCase):
+    """Test cases for updating session status."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.client = Client()
+
+        self.facilitator = User.objects.create_user(
+            email="facilitator@example.com",
+            first_name="John",
+            last_name="Doe",
+            password="testpass123",
+        )
+
+        self.participant = User.objects.create_user(
+            email="participant@example.com",
+            first_name="Jane",
+            last_name="Smith",
+            password="testpass123",
+        )
+
+        # Create test session
+        self.session = Session.objects.create(
+            name="Test Session", facilitator=self.facilitator
+        )
+
+        # Add participants
+        SessionParticipant.objects.create(session=self.session, user=self.facilitator)
+        SessionParticipant.objects.create(session=self.session, user=self.participant)
+
+    def test_update_session_status_success(self):
+        """Test successfully updating session status."""
+        self.client.force_login(self.facilitator)
+
+        response = self.client.post(
+            f"/api/sessions/{self.session.id}/status/",
+            data=json.dumps({"status": "completed"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertIn("message", data)
+        self.assertIn("session", data)
+        self.assertIn("status updated to 'completed'", data["message"])
+
+        # Verify session status was updated
+        self.session.refresh_from_db()
+        self.assertEqual(self.session.status, "completed")
+
+    def test_update_session_status_not_facilitator(self):
+        """Test that only facilitator can update status."""
+        self.client.force_login(self.participant)
+
+        response = self.client.post(
+            f"/api/sessions/{self.session.id}/status/",
+            data=json.dumps({"status": "completed"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        data = response.json()
+        self.assertIn("error", data)
+        self.assertIn("Only the session facilitator can update", data["error"])
+
+    def test_update_session_status_invalid_status(self):
+        """Test updating session with invalid status."""
+        self.client.force_login(self.facilitator)
+
+        response = self.client.post(
+            f"/api/sessions/{self.session.id}/status/",
+            data=json.dumps({"status": "invalid_status"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.json()
+        self.assertIn("error", data)
+        self.assertIn("Invalid status", data["error"])
+
+    def test_update_session_status_invalid_session_id(self):
+        """Test updating status with invalid session ID."""
+        self.client.force_login(self.facilitator)
+
+        response = self.client.post(
+            "/api/sessions/invalid-id/status/",
+            data=json.dumps({"status": "completed"}),
+            content_type="application/json",
+        )
+
+        # Django URL routing returns 404 for invalid UUIDs
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class SessionJoinEdgeCasesTestCase(APITestCase):
+    """Test edge cases for session join functionality."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.client = Client()
+
+        self.facilitator = User.objects.create_user(
+            email="facilitator@example.com",
+            first_name="John",
+            last_name="Doe",
+            password="testpass123",
+        )
+
+        self.participant = User.objects.create_user(
+            email="participant@example.com",
+            first_name="Jane",
+            last_name="Smith",
+            password="testpass123",
+        )
+
+        # Create test session
+        self.session = Session.objects.create(
+            name="Test Session", facilitator=self.facilitator
+        )
+
+        # Add facilitator as participant
+        SessionParticipant.objects.create(session=self.session, user=self.facilitator)
+
+    def test_join_session_invalid_session_id_format(self):
+        """Test joining session with invalid UUID format."""
+        self.client.force_login(self.participant)
+
+        response = self.client.post(
+            "/api/sessions/invalid-uuid-format/join/",
+            content_type="application/json"
+        )
+
+        # Django URL routing returns 404 for invalid UUIDs
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
