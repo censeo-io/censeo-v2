@@ -55,7 +55,7 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ matrix.service }}
           file: ${{ matrix.service }}/Dockerfile.dev
           push: false
           tags: ${{ steps.meta.outputs.tags }}
@@ -101,7 +101,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ matrix.service }}
           file: ${{ matrix.service }}/Dockerfile.dev
           push: true
           tags: ${{ steps.meta.outputs.tags }}
