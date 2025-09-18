@@ -20,27 +20,27 @@ class TestDjangoProjectSetup:
         """Test that Django project files exist."""
         # Check for Django project structure in current directory
         manage_py = Path("manage.py")
-        assert manage_py.exists(), "manage.py should exist"
+        assert manage_py.exists(), "manage.py should exist"  # nosec B101
 
         # Check for main project directory
         project_dir = Path("censeo")
-        assert project_dir.exists(), "Main project directory 'censeo' should exist"
+        assert project_dir.exists(), "Main project directory 'censeo' should exist"  # nosec B101
 
         # Check for essential Django files
         settings_dir = project_dir / "settings"
-        assert settings_dir.exists(), "Settings directory should exist"
+        assert settings_dir.exists(), "Settings directory should exist"  # nosec B101
 
         init_file = project_dir / "__init__.py"
-        assert init_file.exists(), "__init__.py should exist in project directory"
+        assert init_file.exists(), "__init__.py should exist in project directory"  # nosec B101
 
         # Check for core app
         core_dir = Path("core")
-        assert core_dir.exists(), "Core app directory should exist"
+        assert core_dir.exists(), "Core app directory should exist"  # nosec B101
 
     def test_requirements_file_exists(self):
         """Test that requirements.txt exists and contains necessary packages."""
         requirements_file = Path("requirements.txt")
-        assert requirements_file.exists(), "requirements.txt should exist"
+        assert requirements_file.exists(), "requirements.txt should exist"  # nosec B101
 
         with open(requirements_file) as f:
             requirements = f.read()
@@ -54,7 +54,7 @@ class TestDjangoProjectSetup:
         ]
 
         for package in required_packages:
-            assert package in requirements, f"{package} should be in requirements.txt"
+            assert package in requirements, f"{package} should be in requirements.txt"  # nosec B101
 
 
 class TestDjangoSettings:
@@ -63,7 +63,7 @@ class TestDjangoSettings:
     def test_development_settings_exist(self):
         """Test that development settings file exists."""
         settings_file = Path("censeo/settings/development.py")
-        assert settings_file.exists(), "Development settings file should exist"
+        assert settings_file.exists(), "Development settings file should exist"  # nosec B101
 
     def test_database_configuration(self):
         """Test database configuration is set up for PostgreSQL."""

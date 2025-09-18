@@ -27,14 +27,14 @@ class SessionCreationTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant = User.objects.create_user(
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
     def test_create_session_success(self):
@@ -175,21 +175,21 @@ class SessionJoinTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant1 = User.objects.create_user(
             email="participant1@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant2 = User.objects.create_user(
             email="participant2@example.com",
             first_name="Bob",
             last_name="Johnson",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Create test session
@@ -311,14 +311,14 @@ class SessionRetrievalTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant = User.objects.create_user(
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Create test sessions
@@ -422,7 +422,7 @@ class SessionModelTestCase(TestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
     def test_session_creation(self):
@@ -457,7 +457,7 @@ class SessionModelTestCase(TestCase):
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Add participant through the through model
@@ -476,7 +476,7 @@ class SessionModelTestCase(TestCase):
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Add participant first time
@@ -498,21 +498,21 @@ class SessionParticipantsTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant1 = User.objects.create_user(
             email="participant1@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant2 = User.objects.create_user(
             email="participant2@example.com",
             first_name="Bob",
             last_name="Johnson",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Create test session
@@ -589,14 +589,14 @@ class SessionLeaveTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant = User.objects.create_user(
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Create test session
@@ -644,7 +644,7 @@ class SessionLeaveTestCase(APITestCase):
             email="other@example.com",
             first_name="Other",
             last_name="User",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
         self.client.force_login(other_user)
 
@@ -676,14 +676,14 @@ class SessionStatusUpdateTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant = User.objects.create_user(
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Create test session
@@ -771,14 +771,14 @@ class SessionJoinEdgeCasesTestCase(APITestCase):
             email="facilitator@example.com",
             first_name="John",
             last_name="Doe",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         self.participant = User.objects.create_user(
             email="participant@example.com",
             first_name="Jane",
             last_name="Smith",
-            password="testpass123",
+            password="testpass123",  # nosec B106  # nosec B106
         )
 
         # Create test session

@@ -16,7 +16,7 @@ class UserManagerTestCase(TestCase):
         """Test successful user creation."""
         user = User.objects.create_user(
             email="test@example.com",
-            password="testpass123",
+            password="testpass123",  # nosec B106
             first_name="Test",
             last_name="User",
         )
@@ -32,14 +32,14 @@ class UserManagerTestCase(TestCase):
     def test_create_user_no_email(self):
         """Test that creating user without email raises error."""
         with self.assertRaises(ValueError) as cm:
-            User.objects.create_user(email="", password="testpass123")
+            User.objects.create_user(email="", password="testpass123")  # nosec B106
 
         self.assertIn("The Email field must be set", str(cm.exception))
 
     def test_create_user_none_email(self):
         """Test that creating user with None email raises error."""
         with self.assertRaises(ValueError) as cm:
-            User.objects.create_user(email=None, password="testpass123")
+            User.objects.create_user(email=None, password="testpass123")  # nosec B106
 
         self.assertIn("The Email field must be set", str(cm.exception))
 
@@ -47,7 +47,7 @@ class UserManagerTestCase(TestCase):
         """Test successful superuser creation."""
         superuser = User.objects.create_superuser(
             email="admin@example.com",
-            password="adminpass123",
+            password="adminpass123",  # nosec B106
         )
 
         self.assertEqual(superuser.email, "admin@example.com")
@@ -61,7 +61,7 @@ class UserManagerTestCase(TestCase):
         with self.assertRaises(ValueError) as cm:
             User.objects.create_superuser(
                 email="admin@example.com",
-                password="adminpass123",
+                password="adminpass123",  # nosec B106
                 is_staff=False,
             )
 
@@ -72,7 +72,7 @@ class UserManagerTestCase(TestCase):
         with self.assertRaises(ValueError) as cm:
             User.objects.create_superuser(
                 email="admin@example.com",
-                password="adminpass123",
+                password="adminpass123",  # nosec B106
                 is_superuser=False,
             )
 

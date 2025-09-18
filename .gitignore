@@ -57,3 +57,6 @@ job-logs.txt
 # Coverage reports
 backend/coverage.xml
 backend/htmlcov/
+
+# Other
+.op/
