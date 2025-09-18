@@ -29,8 +29,6 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
-    environment:
-      - DJANGO_SETTINGS_MODULE=censeo.settings.development
     volumes:
       - ./backend:/app
       - backend_static:/app/static

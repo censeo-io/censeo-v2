@@ -21,6 +21,8 @@ from .serializers import (
 
 # Error message constants
 INVALID_SESSION_ID_ERROR = "Invalid session ID format."
+SESSION_ACCESS_DENIED_ERROR = "You do not have access to this session."
+STORY_NOT_FOUND_ERROR = "Story not found."
 
 User = get_user_model()
 
@@ -160,7 +162,7 @@ def session_participants(request, session_id):
     # Check if user has access to this session
     if not session.participants.filter(id=request.user.id).exists():
         return Response(
-            {"error": "You do not have access to this session."},
+            {"error": SESSION_ACCESS_DENIED_ERROR},
             status=status.HTTP_403_FORBIDDEN,
         )
 
@@ -293,7 +295,9 @@ class StoryListCreateView(generics.ListCreateAPIView):
         if not session.participants.filter(id=self.request.user.id).exists():
             return Story.objects.none()
 
-        return Story.objects.filter(session=session).order_by("story_order", "created_at")
+        return Story.objects.filter(session=session).order_by(
+            "story_order", "created_at"
+        )
 
     def list(self, request, *args, **kwargs):
         """List stories in a session."""
@@ -307,7 +311,7 @@ class StoryListCreateView(generics.ListCreateAPIView):
         # Check if user has access to this session
         if not session.participants.filter(id=request.user.id).exists():
             return Response(
-                {"error": "You do not have access to this session."},
+                {"error": SESSION_ACCESS_DENIED_ERROR},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -389,7 +393,7 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
         # Check if user has access to this session
         if not session.participants.filter(id=request.user.id).exists():
             return Response(
-                {"error": "You do not have access to this session."},
+                {"error": SESSION_ACCESS_DENIED_ERROR},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -399,7 +403,7 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data)
         except Story.DoesNotExist:
             return Response(
-                {"error": "Story not found."},
+                {"error": STORY_NOT_FOUND_ERROR},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -423,7 +427,7 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
             story = self.get_object()
         except Story.DoesNotExist:
             return Response(
-                {"error": "Story not found."},
+                {"error": STORY_NOT_FOUND_ERROR},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -456,6 +460,6 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Story.DoesNotExist:
             return Response(
-                {"error": "Story not found."},
+                {"error": STORY_NOT_FOUND_ERROR},
                 status=status.HTTP_404_NOT_FOUND,
             )

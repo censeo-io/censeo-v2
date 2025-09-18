@@ -39,7 +39,9 @@ class StoryModelTestCase(TestCase):
 
         self.assertEqual(story.session, self.session)
         self.assertEqual(story.title, "As a user, I want to login")
-        self.assertEqual(story.description, "Implement user authentication functionality")
+        self.assertEqual(
+            story.description, "Implement user authentication functionality"
+        )
         self.assertEqual(story.story_order, 1)
         self.assertEqual(story.status, "pending")
         self.assertIsNotNone(story.created_at)
@@ -306,7 +308,9 @@ class StoryAPITestCase(APITestCase):
         )
         self.client.force_login(self.participant)
 
-        response = self.client.get(f"/api/sessions/{self.session.id}/stories/{story.id}/")
+        response = self.client.get(
+            f"/api/sessions/{self.session.id}/stories/{story.id}/"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
@@ -393,7 +397,9 @@ class StoryAPITestCase(APITestCase):
 
         self.client.force_login(self.facilitator)
 
-        response = self.client.delete(f"/api/sessions/{self.session.id}/stories/{story.id}/")
+        response = self.client.delete(
+            f"/api/sessions/{self.session.id}/stories/{story.id}/"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -415,7 +421,9 @@ class StoryAPITestCase(APITestCase):
         )
         self.client.force_login(self.participant)
 
-        response = self.client.delete(f"/api/sessions/{self.session.id}/stories/{story.id}/")
+        response = self.client.delete(
+            f"/api/sessions/{self.session.id}/stories/{story.id}/"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -459,5 +467,7 @@ class StoryAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         # Test with non-existent session
-        response = self.client.get("/api/sessions/00000000-0000-0000-0000-000000000000/stories/")
+        response = self.client.get(
+            "/api/sessions/00000000-0000-0000-0000-000000000000/stories/"
+        )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
