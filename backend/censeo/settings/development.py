@@ -64,5 +64,5 @@ SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to read token
-CSRF_USE_SESSIONS = True  # Use session-based CSRF tokens
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens for API compatibility
 CSRF_COOKIE_AGE = None  # Use session age
