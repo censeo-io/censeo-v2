@@ -33,6 +33,13 @@ const initialState: AuthState = {
   isLoading: true,
 };
 
+const createUnauthenticatedState = (state: AuthState): AuthState => ({
+  ...state,
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+});
+
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case "LOGIN_START":
@@ -48,19 +55,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         isLoading: false,
       };
     case "LOGIN_FAILURE":
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      };
     case "LOGOUT":
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      };
+      return createUnauthenticatedState(state);
     case "SET_LOADING":
       return {
         ...state,

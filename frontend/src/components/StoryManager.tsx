@@ -86,7 +86,8 @@ const StoryManager: React.FC<StoryManagerProps> = ({
       setFormOpen(false);
       setEditingStory(null);
     } catch (err) {
-      throw err; // Let the form handle the error
+      console.error("Story form submission failed:", err);
+      throw err; // Let the form handle the error display
     } finally {
       setSubmitting(false);
     }
