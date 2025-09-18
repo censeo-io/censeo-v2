@@ -293,7 +293,8 @@ const SessionPage: React.FC = () => {
           <Card>
             <CardContent>
               <Alert severity="info">
-                This session is {session.status}. Story management is only available for active sessions.
+                This session is {session.status}. Story management is only
+                available for active sessions.
               </Alert>
             </CardContent>
           </Card>

@@ -52,7 +52,10 @@ const StoryList: React.FC<StoryListProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, story: Story) => {
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    story: Story,
+  ) => {
     setAnchorEl(event.currentTarget);
     setSelectedStory(story);
   };
@@ -117,20 +120,19 @@ const StoryList: React.FC<StoryListProps> = ({
   };
 
   if (loading) {
-    return (
-      <Alert severity="info">
-        Loading stories...
-      </Alert>
-    );
+    return <Alert severity="info">Loading stories...</Alert>;
   }
 
   if (error) {
     return (
-      <Alert severity="error" action={
-        <Button size="small" onClick={onRefresh}>
-          Retry
-        </Button>
-      }>
+      <Alert
+        severity="error"
+        action={
+          <Button size="small" onClick={onRefresh}>
+            Retry
+          </Button>
+        }
+      >
         {error}
       </Alert>
     );
@@ -150,9 +152,18 @@ const StoryList: React.FC<StoryListProps> = ({
       {stories.map((story, index) => (
         <Card key={story.id} sx={{ mb: 2 }}>
           <CardContent>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                mb: 2,
+              }}
+            >
               <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                >
                   <Typography variant="h6" component="h3">
                     {story.title}
                   </Typography>
@@ -163,12 +174,17 @@ const StoryList: React.FC<StoryListProps> = ({
                   />
                 </Box>
                 {story.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
                     {story.description}
                   </Typography>
                 )}
                 <Typography variant="caption" color="text.secondary">
-                  Order: #{story.story_order} • Created: {new Date(story.created_at).toLocaleDateString()}
+                  Order: #{story.story_order} • Created:{" "}
+                  {new Date(story.created_at).toLocaleDateString()}
                 </Typography>
               </Box>
               {isFacilitator && (

@@ -42,6 +42,7 @@ const StoryForm: React.FC<StoryFormProps> = ({
     status: "pending" as Story["status"],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string>("");
 
   const isEditing = Boolean(story);
 
@@ -62,6 +63,7 @@ const StoryForm: React.FC<StoryFormProps> = ({
       });
     }
     setErrors({});
+    setSubmitError("");
   }, [story, open]);
 
   const validateForm = () => {
@@ -89,6 +91,7 @@ const StoryForm: React.FC<StoryFormProps> = ({
     }
 
     try {
+      setSubmitError("");
       const submitData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -100,26 +103,36 @@ const StoryForm: React.FC<StoryFormProps> = ({
       onClose();
     } catch (error) {
       console.error("Error submitting story form:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while saving the story",
+      );
     }
   };
 
-  const handleInputChange = (field: keyof typeof formData) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any,
-  ) => {
-    const value = event.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      [field]: field === "story_order" ? Number(value) : value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({
+  const handleInputChange =
+    (field: keyof typeof formData) =>
+    (
+      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any,
+    ) => {
+      const value = event.target.value;
+      setFormData((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: field === "story_order" ? Number(value) : value,
       }));
-    }
-  };
+
+      // Clear errors when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
+      }
+      if (submitError) {
+        setSubmitError("");
+      }
+    };
 
   return (
     <Dialog
@@ -132,9 +145,7 @@ const StoryForm: React.FC<StoryFormProps> = ({
         onSubmit: handleSubmit,
       }}
     >
-      <DialogTitle>
-        {isEditing ? "Edit Story" : "Create New Story"}
-      </DialogTitle>
+      <DialogTitle>{isEditing ? "Edit Story" : "Create New Story"}</DialogTitle>
 
       <DialogContent>
         <Box sx={{ pt: 1 }}>
@@ -169,7 +180,10 @@ const StoryForm: React.FC<StoryFormProps> = ({
             value={formData.story_order}
             onChange={handleInputChange("story_order")}
             error={Boolean(errors.story_order)}
-            helperText={errors.story_order || "Order in which this story should be discussed"}
+            helperText={
+              errors.story_order ||
+              "Order in which this story should be discussed"
+            }
             inputProps={{ min: 0 }}
             sx={{ mb: 3 }}
             disabled={loading}
@@ -190,6 +204,12 @@ const StoryForm: React.FC<StoryFormProps> = ({
             </Select>
           </FormControl>
 
+          {submitError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {submitError}
+            </Alert>
+          )}
+
           {Object.keys(errors).length > 0 && (
             <Alert severity="error" sx={{ mt: 2 }}>
               Please fix the errors above before submitting.
@@ -202,12 +222,8 @@ const StoryForm: React.FC<StoryFormProps> = ({
         <Button onClick={onClose} disabled={loading}>
           Cancel
         </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : (isEditing ? "Update Story" : "Create Story")}
+        <Button type="submit" variant="contained" disabled={loading}>
+          {loading ? "Saving..." : isEditing ? "Update Story" : "Create Story"}
         </Button>
       </DialogActions>
     </Dialog>

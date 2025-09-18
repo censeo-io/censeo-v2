@@ -17,10 +17,7 @@ import {
   Alert,
   Fab,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  Refresh as RefreshIcon,
-} from "@mui/icons-material";
+import { Add as AddIcon, Refresh as RefreshIcon } from "@mui/icons-material";
 import { Story, CreateStoryRequest, UpdateStoryRequest } from "../types/story";
 import { storyApi } from "../services/api";
 import StoryList from "./StoryList";
@@ -71,7 +68,9 @@ const StoryManager: React.FC<StoryManagerProps> = ({
     setFormOpen(true);
   };
 
-  const handleFormSubmit = async (data: CreateStoryRequest | UpdateStoryRequest) => {
+  const handleFormSubmit = async (
+    data: CreateStoryRequest | UpdateStoryRequest,
+  ) => {
     try {
       setSubmitting(true);
 
@@ -111,12 +110,17 @@ const StoryManager: React.FC<StoryManagerProps> = ({
     }
   };
 
-  const handleUpdateStoryStatus = async (storyId: string, status: Story["status"]) => {
+  const handleUpdateStoryStatus = async (
+    storyId: string,
+    status: Story["status"],
+  ) => {
     try {
       await storyApi.updateStory(sessionId, storyId, { status });
       await loadStories(); // Refresh the list
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update story status");
+      setError(
+        err instanceof Error ? err.message : "Failed to update story status",
+      );
     }
   };
 
@@ -127,7 +131,14 @@ const StoryManager: React.FC<StoryManagerProps> = ({
 
   return (
     <Paper sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Typography variant="h6" component="h2">
           Stories ({stories.length})
         </Typography>
@@ -185,14 +196,17 @@ const StoryManager: React.FC<StoryManagerProps> = ({
         <DialogTitle>Delete Story</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this story? This action cannot be undone.
+            Are you sure you want to delete this story? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={confirmDeleteStory} color="error" variant="contained">
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={confirmDeleteStory}
+            color="error"
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>
