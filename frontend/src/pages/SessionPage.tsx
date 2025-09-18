@@ -35,6 +35,7 @@ import {
 import { useAuth } from "../components/auth/AuthContext";
 import { sessionApi } from "../services/api";
 import { Session } from "../types/session";
+import StoryManager from "../components/StoryManager";
 
 const SessionPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -282,35 +283,21 @@ const SessionPage: React.FC = () => {
           )}
         </Paper>
 
-        {/* Session Actions */}
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Session Actions
-            </Typography>
-
-            {session.status === "active" ? (
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                <Button variant="contained" disabled>
-                  Start Story Voting (Coming Soon)
-                </Button>
-                <Button variant="outlined" disabled>
-                  Add Stories (Coming Soon)
-                </Button>
-                {isSessionFacilitator && (
-                  <Button variant="outlined" disabled>
-                    Manage Session (Coming Soon)
-                  </Button>
-                )}
-              </Box>
-            ) : (
+        {/* Story Management */}
+        {session.status === "active" ? (
+          <StoryManager
+            sessionId={sessionId!}
+            isFacilitator={isSessionFacilitator}
+          />
+        ) : (
+          <Card>
+            <CardContent>
               <Alert severity="info">
-                This session is {session.status}. No actions are currently
-                available.
+                This session is {session.status}. Story management is only available for active sessions.
               </Alert>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </Box>
     </Container>
   );
