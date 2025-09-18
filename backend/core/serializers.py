@@ -118,19 +118,34 @@ class SessionCreateSerializer(serializers.ModelSerializer):
 class StorySerializer(serializers.ModelSerializer):
     """Serializer for Story model."""
 
-    story_id = serializers.UUIDField(source="id", read_only=True)
+    id = serializers.UUIDField(read_only=True)
+    session = serializers.UUIDField(source="session.id", read_only=True)
 
     class Meta:
         model = Story
         fields = [
-            "story_id",
+            "id",
+            "session",
             "title",
             "description",
             "story_order",
             "status",
             "created_at",
         ]
-        read_only_fields = ["story_id", "created_at"]
+        read_only_fields = ["id", "session", "created_at"]
+
+
+class StoryCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating stories."""
+
+    class Meta:
+        model = Story
+        fields = [
+            "title",
+            "description",
+            "story_order",
+            "status",
+        ]
 
 
 class VoteSerializer(serializers.ModelSerializer):
