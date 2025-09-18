@@ -17,6 +17,9 @@ from .serializers import (
     SessionSerializer,
 )
 
+# Error message constants
+INVALID_SESSION_ID_ERROR = "Invalid session ID format."
+
 User = get_user_model()
 
 
@@ -98,7 +101,7 @@ class SessionJoinView(APIView):
             session = get_object_or_404(Session, id=session_id)
         except ValueError:
             return Response(
-                {"error": "Invalid session ID format."},
+                {"error": INVALID_SESSION_ID_ERROR},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -149,7 +152,7 @@ def session_participants(request, session_id):
         session = get_object_or_404(Session, id=session_id)
     except ValueError:
         return Response(
-            {"error": "Invalid session ID format."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": INVALID_SESSION_ID_ERROR}, status=status.HTTP_400_BAD_REQUEST
         )
 
     # Check if user has access to this session
@@ -185,7 +188,7 @@ def leave_session(request, session_id):
         session = get_object_or_404(Session, id=session_id)
     except ValueError:
         return Response(
-            {"error": "Invalid session ID format."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": INVALID_SESSION_ID_ERROR}, status=status.HTTP_400_BAD_REQUEST
         )
 
     user = request.user
@@ -226,7 +229,7 @@ def update_session_status(request, session_id):
         session = get_object_or_404(Session, id=session_id)
     except ValueError:
         return Response(
-            {"error": "Invalid session ID format."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": INVALID_SESSION_ID_ERROR}, status=status.HTTP_400_BAD_REQUEST
         )
 
     user = request.user
