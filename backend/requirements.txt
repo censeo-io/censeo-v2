@@ -19,6 +19,5 @@ pytest-django==4.7.0
 factory-boy==3.3.0
 
 # Code quality
-black==23.11.0
-flake8==6.1.0
-isort==5.12.0
+ruff==0.8.4
+pytest-cov==4.1.0

@@ -52,3 +52,11 @@ postgres_data/
 # Test cache
 .pytest_cache/
 .cache/
+job-logs.txt
+
+# Coverage reports
+backend/coverage.xml
+backend/htmlcov/
+
+# Other
+.op/

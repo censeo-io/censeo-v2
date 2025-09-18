@@ -29,6 +29,9 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=1
+      - SECRET_KEY=${SECRET_KEY}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
       - DATABASE_NAME=censeo_dev
       - DATABASE_USER=censeo_user
       - DATABASE_PASSWORD=censeo_dev_password

@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-"""
-Tests for Django backend setup and basic models.
+"""Tests for Django backend setup and basic models.
 These tests verify that our Django REST API backend is properly configured.
 """
 
 import os
-import django
-from django.test import TestCase, Client
-from django.core.management import call_command
-from django.db import connection
-from django.conf import settings
-import pytest
 from pathlib import Path
 
+import pytest
+from django.test import Client, TestCase
+
 # Set up Django environment for testing
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'censeo.settings.development')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "censeo.settings.development")
+
 
 class TestDjangoProjectSetup:
     """Test Django project initialization and configuration."""
@@ -23,29 +20,29 @@ class TestDjangoProjectSetup:
         """Test that Django project files exist."""
         # Check for Django project structure in current directory
         manage_py = Path("manage.py")
-        assert manage_py.exists(), "manage.py should exist"
+        assert manage_py.exists(), "manage.py should exist"  # nosec B101
 
         # Check for main project directory
         project_dir = Path("censeo")
-        assert project_dir.exists(), "Main project directory 'censeo' should exist"
+        assert project_dir.exists(), "Main project directory 'censeo' should exist"  # nosec B101
 
         # Check for essential Django files
         settings_dir = project_dir / "settings"
-        assert settings_dir.exists(), "Settings directory should exist"
+        assert settings_dir.exists(), "Settings directory should exist"  # nosec B101
 
         init_file = project_dir / "__init__.py"
-        assert init_file.exists(), "__init__.py should exist in project directory"
+        assert init_file.exists(), "__init__.py should exist in project directory"  # nosec B101
 
         # Check for core app
         core_dir = Path("core")
-        assert core_dir.exists(), "Core app directory should exist"
+        assert core_dir.exists(), "Core app directory should exist"  # nosec B101
 
     def test_requirements_file_exists(self):
         """Test that requirements.txt exists and contains necessary packages."""
         requirements_file = Path("requirements.txt")
-        assert requirements_file.exists(), "requirements.txt should exist"
+        assert requirements_file.exists(), "requirements.txt should exist"  # nosec B101
 
-        with open(requirements_file, 'r') as f:
+        with open(requirements_file) as f:
             requirements = f.read()
 
         # Check for essential packages
@@ -53,11 +50,12 @@ class TestDjangoProjectSetup:
             "Django",
             "djangorestframework",
             "psycopg2-binary",
-            "django-cors-headers"
+            "django-cors-headers",
         ]
 
         for package in required_packages:
-            assert package in requirements, f"{package} should be in requirements.txt"
+            assert package in requirements, f"{package} should be in requirements.txt"  # nosec B101
+
 
 class TestDjangoSettings:
     """Test Django settings configuration."""
@@ -65,12 +63,12 @@ class TestDjangoSettings:
     def test_development_settings_exist(self):
         """Test that development settings file exists."""
         settings_file = Path("censeo/settings/development.py")
-        assert settings_file.exists(), "Development settings file should exist"
+        assert settings_file.exists(), "Development settings file should exist"  # nosec B101
 
     def test_database_configuration(self):
         """Test database configuration is set up for PostgreSQL."""
         # This will be validated once Django is initialized
-        pass
+
 
 @pytest.mark.django_db
 class TestDjangoModels(TestCase):
@@ -78,62 +76,54 @@ class TestDjangoModels(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        pass
 
     def test_user_model_creation(self):
         """Test User model can be created and saved."""
         # Will be implemented after models are created
-        pass
 
     def test_session_model_creation(self):
         """Test Session model can be created and saved."""
-        pass
 
     def test_story_model_creation(self):
         """Test Story model can be created and saved."""
-        pass
 
     def test_vote_model_creation(self):
         """Test Vote model can be created and saved."""
-        pass
 
     def test_model_relationships(self):
         """Test model relationships work correctly."""
         # Test foreign key relationships between models
-        pass
+
 
 class TestDjangoMigrations:
     """Test Django migrations functionality."""
 
     def test_initial_migration_exists(self):
         """Test that initial migration files exist."""
-        pass
 
     def test_migrations_apply_successfully(self):
         """Test that migrations can be applied without errors."""
-        pass
+
 
 class TestDjangoRESTFramework:
     """Test Django REST Framework configuration."""
 
     def test_drf_installed(self):
         """Test that Django REST Framework is properly installed."""
-        pass
 
     def test_api_endpoints_configured(self):
         """Test that basic API endpoints are configured."""
-        pass
+
 
 class TestMockAuthentication:
     """Test mock authentication system."""
 
     def test_mock_auth_endpoints(self):
         """Test mock authentication endpoints work."""
-        pass
 
     def test_session_management(self):
         """Test session management functionality."""
-        pass
+
 
 class TestAPIFunctionality:
     """Test basic API functionality."""
@@ -144,11 +134,10 @@ class TestAPIFunctionality:
 
     def test_api_root_accessible(self):
         """Test that API root endpoint is accessible."""
-        pass
 
     def test_health_check_endpoint(self):
         """Test health check endpoint returns 200."""
-        pass
+
 
 if __name__ == "__main__":
     # Run basic structure tests that don't require Django to be initialized
