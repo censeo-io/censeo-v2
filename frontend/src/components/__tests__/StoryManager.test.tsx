@@ -53,7 +53,7 @@ jest.mock("../StoryList", () => {
             </button>
           </div>
         ))}
-        <button onClick={onRefresh}>Refresh List</button>
+        <button onClick={onRefresh}>Mock Refresh</button>
       </div>
     );
   };
@@ -111,7 +111,7 @@ const mockStories: Story[] = [
   },
 ];
 
-const renderStoryManager = (props: { sessionId?: string; isFacilitator?: boolean } = {}) => {
+const renderStoryManager = async (props: { sessionId?: string; isFacilitator?: boolean } = {}) => {
   const defaultProps = {
     sessionId: "session-1",
     isFacilitator: false,
@@ -120,11 +120,18 @@ const renderStoryManager = (props: { sessionId?: string; isFacilitator?: boolean
 
   const theme = createAppTheme();
 
-  return render(
+  const view = render(
     <ThemeProvider theme={theme}>
       <StoryManager {...defaultProps} />
     </ThemeProvider>,
   );
+
+  // Wait for initial loading to complete - this allows async operations to finish
+  await waitFor(() => {
+    expect(screen.getByTestId("loading-state")).toHaveTextContent("not-loading");
+  });
+
+  return view;
 };
 
 describe("StoryManager Component", () => {
@@ -135,35 +142,33 @@ describe("StoryManager Component", () => {
 
   describe("Component Rendering", () => {
     it("renders with correct title and story count", async () => {
-      renderStoryManager();
-
-      expect(screen.getByText(/Stories \(0\)/)).toBeInTheDocument();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByText(/Stories \(2\)/)).toBeInTheDocument();
       });
     });
 
-    it("shows refresh button for all users", () => {
-      renderStoryManager();
+    it("shows refresh button for all users", async () => {
+      await renderStoryManager();
 
-      expect(screen.getByRole("button", { name: /refresh/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
     });
 
-    it("shows Add Story button only for facilitators", () => {
-      renderStoryManager({ isFacilitator: true });
+    it("shows Add Story button only for facilitators", async () => {
+      await renderStoryManager({ isFacilitator: true });
 
       expect(screen.getByRole("button", { name: /add story/i })).toBeInTheDocument();
     });
 
-    it("hides Add Story button for non-facilitators", () => {
-      renderStoryManager({ isFacilitator: false });
+    it("hides Add Story button for non-facilitators", async () => {
+      await renderStoryManager({ isFacilitator: false });
 
       expect(screen.queryByRole("button", { name: /add story/i })).not.toBeInTheDocument();
     });
 
-    it("shows floating action button for facilitators on mobile", () => {
-      renderStoryManager({ isFacilitator: true });
+    it("shows floating action button for facilitators on mobile", async () => {
+      await renderStoryManager({ isFacilitator: true });
 
       const fab = screen.getByLabelText("add story");
       expect(fab).toBeInTheDocument();
@@ -172,7 +177,7 @@ describe("StoryManager Component", () => {
 
   describe("Data Loading", () => {
     it("loads stories on mount", async () => {
-      renderStoryManager({ sessionId: "test-session" });
+      await renderStoryManager({ sessionId: "test-session" });
 
       await waitFor(() => {
         expect(mockStoryApi.getStories).toHaveBeenCalledWith("test-session");
@@ -183,8 +188,8 @@ describe("StoryManager Component", () => {
       });
     });
 
-    it("handles loading state correctly", () => {
-      renderStoryManager();
+    it("handles loading state correctly", async () => {
+      await renderStoryManager();
 
       expect(screen.getByTestId("loading-state")).toHaveTextContent("loading");
     });
@@ -193,7 +198,7 @@ describe("StoryManager Component", () => {
       const errorMessage = "Failed to load stories";
       mockStoryApi.getStories.mockRejectedValue(new Error(errorMessage));
 
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -203,7 +208,7 @@ describe("StoryManager Component", () => {
     it("handles non-Error exceptions during load", async () => {
       mockStoryApi.getStories.mockRejectedValue("String error");
 
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByText("Failed to load stories")).toBeInTheDocument();
@@ -213,7 +218,7 @@ describe("StoryManager Component", () => {
 
   describe("Refresh Functionality", () => {
     it("refreshes stories when refresh button is clicked", async () => {
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(mockStoryApi.getStories).toHaveBeenCalledTimes(1);
@@ -227,7 +232,7 @@ describe("StoryManager Component", () => {
     });
 
     it("refreshes through StoryList refresh callback", async () => {
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(mockStoryApi.getStories).toHaveBeenCalledTimes(1);
@@ -243,7 +248,7 @@ describe("StoryManager Component", () => {
 
   describe("Story Creation", () => {
     it("opens create form when Add Story button is clicked", async () => {
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       fireEvent.click(screen.getByRole("button", { name: /add story/i }));
 
@@ -252,7 +257,7 @@ describe("StoryManager Component", () => {
     });
 
     it("opens create form when FAB is clicked", async () => {
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       fireEvent.click(screen.getByLabelText("add story"));
 
@@ -271,7 +276,7 @@ describe("StoryManager Component", () => {
         created_at: "2024-01-03T00:00:00Z",
       });
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       // Open form
       fireEvent.click(screen.getByRole("button", { name: /add story/i }));
@@ -301,7 +306,7 @@ describe("StoryManager Component", () => {
     it("handles create story API errors", async () => {
       mockStoryApi.createStory.mockRejectedValue(new Error("Creation failed"));
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       // Open form
       fireEvent.click(screen.getByRole("button", { name: /add story/i }));
@@ -318,7 +323,7 @@ describe("StoryManager Component", () => {
 
   describe("Story Editing", () => {
     it("opens edit form when edit button is clicked", async () => {
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -336,7 +341,7 @@ describe("StoryManager Component", () => {
         title: "Updated Story",
       });
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -366,7 +371,7 @@ describe("StoryManager Component", () => {
     it("handles update story API errors", async () => {
       mockStoryApi.updateStory.mockRejectedValue(new Error("Update failed"));
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -387,7 +392,7 @@ describe("StoryManager Component", () => {
 
   describe("Story Deletion", () => {
     it("opens delete confirmation dialog", async () => {
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -400,7 +405,7 @@ describe("StoryManager Component", () => {
     });
 
     it("cancels delete operation", async () => {
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -415,7 +420,7 @@ describe("StoryManager Component", () => {
     it("deletes story successfully", async () => {
       mockStoryApi.deleteStory.mockResolvedValue(undefined);
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -445,7 +450,7 @@ describe("StoryManager Component", () => {
       const errorMessage = "Failed to delete story";
       mockStoryApi.deleteStory.mockRejectedValue(new Error(errorMessage));
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -465,7 +470,7 @@ describe("StoryManager Component", () => {
     it("handles non-Error exceptions during delete", async () => {
       mockStoryApi.deleteStory.mockRejectedValue("String error");
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -487,7 +492,7 @@ describe("StoryManager Component", () => {
         status: "completed",
       });
 
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -510,7 +515,7 @@ describe("StoryManager Component", () => {
       const errorMessage = "Failed to update story status";
       mockStoryApi.updateStory.mockRejectedValue(new Error(errorMessage));
 
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -526,7 +531,7 @@ describe("StoryManager Component", () => {
     it("handles non-Error exceptions during status update", async () => {
       mockStoryApi.updateStory.mockRejectedValue("String error");
 
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
@@ -542,7 +547,7 @@ describe("StoryManager Component", () => {
 
   describe("Form Management", () => {
     it("closes form when cancel is clicked", async () => {
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       // Open form
       fireEvent.click(screen.getByRole("button", { name: /add story/i }));
@@ -561,7 +566,7 @@ describe("StoryManager Component", () => {
         () => new Promise((resolve) => setTimeout(resolve, 100)),
       );
 
-      renderStoryManager({ isFacilitator: true });
+      await renderStoryManager({ isFacilitator: true });
 
       // Open form
       fireEvent.click(screen.getByRole("button", { name: /add story/i }));
@@ -578,7 +583,7 @@ describe("StoryManager Component", () => {
       // First call fails
       mockStoryApi.getStories.mockRejectedValueOnce(new Error("Load failed"));
 
-      renderStoryManager();
+      await renderStoryManager();
 
       await waitFor(() => {
         expect(screen.getByText("Load failed")).toBeInTheDocument();

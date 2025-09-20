@@ -28,9 +28,10 @@ const defaultProps = {
   loading: false,
 };
 
+const theme = createAppTheme();
+
 const renderStoryForm = (props = {}) => {
   const mergedProps = { ...defaultProps, ...props };
-  const theme = createAppTheme();
 
   return render(
     <ThemeProvider theme={theme}>
