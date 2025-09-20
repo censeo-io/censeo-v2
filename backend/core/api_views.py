@@ -10,15 +10,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Session, SessionParticipant
+from .models import Session, SessionParticipant, Story
 from .serializers import (
     SessionCreateSerializer,
     SessionParticipantSerializer,
     SessionSerializer,
+    StoryCreateSerializer,
+    StorySerializer,
 )
 
 # Error message constants
 INVALID_SESSION_ID_ERROR = "Invalid session ID format."
+SESSION_ACCESS_DENIED_ERROR = "You do not have access to this session."
+STORY_NOT_FOUND_ERROR = "Story not found."
 
 User = get_user_model()
 
@@ -158,7 +162,7 @@ def session_participants(request, session_id):
     # Check if user has access to this session
     if not session.participants.filter(id=request.user.id).exists():
         return Response(
-            {"error": "You do not have access to this session."},
+            {"error": SESSION_ACCESS_DENIED_ERROR},
             status=status.HTTP_403_FORBIDDEN,
         )
 
@@ -258,3 +262,204 @@ def update_session_status(request, session_id):
             "session": serializer.data,
         }
     )
+
+
+class StoryListCreateView(generics.ListCreateAPIView):
+    """List stories in a session or create a new story.
+    GET: List stories for session participants
+    POST: Create a new story (facilitator only)
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return StoryCreateSerializer
+        return StorySerializer
+
+    def get_session(self):
+        """Get the session and check user permissions."""
+        try:
+            session = get_object_or_404(Session, id=self.kwargs["session_id"])
+        except ValueError:
+            return None
+        return session
+
+    def get_queryset(self):
+        """Return stories for the session if user is a participant."""
+        session = self.get_session()
+        if not session:
+            return Story.objects.none()
+
+        # Check if user is a participant
+        if not session.participants.filter(id=self.request.user.id).exists():
+            return Story.objects.none()
+
+        return Story.objects.filter(session=session).order_by(
+            "story_order", "created_at"
+        )
+
+    def list(self, request, *args, **kwargs):
+        """List stories in a session."""
+        session = self.get_session()
+        if not session:
+            return Response(
+                {"error": INVALID_SESSION_ID_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Check if user has access to this session
+        if not session.participants.filter(id=request.user.id).exists():
+            return Response(
+                {"error": SESSION_ACCESS_DENIED_ERROR},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        """Create a new story (facilitator only)."""
+        session = self.get_session()
+        if not session:
+            return Response(
+                {"error": INVALID_SESSION_ID_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only facilitator can create stories
+        if session.facilitator != request.user:
+            return Response(
+                {"error": "Only the session facilitator can create stories."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            story = serializer.save(session=session)
+
+        response_serializer = StorySerializer(story)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update, or delete a specific story.
+    GET: Get story details (participants)
+    PUT: Update story (facilitator only)
+    DELETE: Delete story (facilitator only)
+    """
+
+    serializer_class = StorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "id"
+
+    def get_session(self):
+        """Get the session and check user permissions."""
+        try:
+            session = get_object_or_404(Session, id=self.kwargs["session_id"])
+        except ValueError:
+            return None
+        return session
+
+    def get_queryset(self):
+        """Return stories for the session if user is a participant."""
+        session = self.get_session()
+        if not session:
+            return Story.objects.none()
+
+        # Check if user is a participant
+        if not session.participants.filter(id=self.request.user.id).exists():
+            return Story.objects.none()
+
+        return Story.objects.filter(session=session)
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return StoryCreateSerializer
+        return StorySerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve story details."""
+        session = self.get_session()
+        if not session:
+            return Response(
+                {"error": INVALID_SESSION_ID_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Check if user has access to this session
+        if not session.participants.filter(id=request.user.id).exists():
+            return Response(
+                {"error": SESSION_ACCESS_DENIED_ERROR},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            story = self.get_object()
+            serializer = self.get_serializer(story)
+            return Response(serializer.data)
+        except Story.DoesNotExist:
+            return Response(
+                {"error": STORY_NOT_FOUND_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    def update(self, request, *args, **kwargs):
+        """Update a story (facilitator only)."""
+        session = self.get_session()
+        if not session:
+            return Response(
+                {"error": INVALID_SESSION_ID_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only facilitator can update stories
+        if session.facilitator != request.user:
+            return Response(
+                {"error": "Only the session facilitator can update stories."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            story = self.get_object()
+        except Story.DoesNotExist:
+            return Response(
+                {"error": STORY_NOT_FOUND_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = self.get_serializer(story, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        response_serializer = StorySerializer(story)
+        return Response(response_serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete a story (facilitator only)."""
+        session = self.get_session()
+        if not session:
+            return Response(
+                {"error": INVALID_SESSION_ID_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only facilitator can delete stories
+        if session.facilitator != request.user:
+            return Response(
+                {"error": "Only the session facilitator can delete stories."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            story = self.get_object()
+            story.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Story.DoesNotExist:
+            return Response(
+                {"error": STORY_NOT_FOUND_ERROR},
+                status=status.HTTP_404_NOT_FOUND,
+            )

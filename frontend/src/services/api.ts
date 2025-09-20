@@ -17,6 +17,12 @@ import {
   JoinSessionResponse,
   SessionListResponse,
 } from "../types/session";
+import {
+  Story,
+  CreateStoryRequest,
+  UpdateStoryRequest,
+  StoryListResponse,
+} from "../types/story";
 
 // API base URL from environment or default to localhost
 const API_BASE_URL =
@@ -265,6 +271,46 @@ export const sessionApi = {
   ): Promise<{ message: string; session: Session }> {
     return handleApiRequest<{ message: string; session: Session }>(
       apiClient.post(`/sessions/${sessionId}/status/`, { status }),
+    );
+  },
+};
+
+// Story API methods
+export const storyApi = {
+  async getStories(sessionId: string): Promise<StoryListResponse> {
+    return handleApiRequest<StoryListResponse>(
+      apiClient.get(`/sessions/${sessionId}/stories/`),
+    );
+  },
+
+  async createStory(
+    sessionId: string,
+    storyData: CreateStoryRequest,
+  ): Promise<Story> {
+    return handleApiRequest<Story>(
+      apiClient.post(`/sessions/${sessionId}/stories/`, storyData),
+    );
+  },
+
+  async getStory(sessionId: string, storyId: string): Promise<Story> {
+    return handleApiRequest<Story>(
+      apiClient.get(`/sessions/${sessionId}/stories/${storyId}/`),
+    );
+  },
+
+  async updateStory(
+    sessionId: string,
+    storyId: string,
+    storyData: UpdateStoryRequest,
+  ): Promise<Story> {
+    return handleApiRequest<Story>(
+      apiClient.put(`/sessions/${sessionId}/stories/${storyId}/`, storyData),
+    );
+  },
+
+  async deleteStory(sessionId: string, storyId: string): Promise<void> {
+    return handleApiRequest<void>(
+      apiClient.delete(`/sessions/${sessionId}/stories/${storyId}/`),
     );
   },
 };

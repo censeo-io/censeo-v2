@@ -43,13 +43,13 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
 
 ### Phase B: Story Management and Voting System
 
-- [ ] 5. **Story Management**
-    - [ ] 5.1 Write tests for story CRUD operations
-    - [ ] 5.2 Implement story creation and listing API endpoints
-    - [ ] 5.3 Create story management UI for facilitators
-    - [ ] 5.4 Add story display for participants
-    - [ ] 5.5 Implement story status management (pending/voting/completed)
-    - [ ] 5.6 Verify story management workflow end-to-end
+- [x] 5. **Story Management**
+    - [x] 5.1 Write tests for story CRUD operations
+    - [x] 5.2 Implement story creation and listing API endpoints
+    - [x] 5.3 Create story management UI for facilitators
+    - [x] 5.4 Add story display for participants
+    - [x] 5.5 Implement story status management (pending/voting/completed)
+    - [x] 5.6 Verify story management workflow end-to-end
 
 - [ ] 6. **Voting System**
     - [ ] 6.1 Write tests for vote submission and retrieval
