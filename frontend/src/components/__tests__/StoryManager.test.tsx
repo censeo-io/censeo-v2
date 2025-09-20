@@ -44,11 +44,14 @@ jest.mock("../StoryList", () => {
             <span>{story.title}</span>
             {isFacilitator && (
               <>
-                <button onClick={() => onEditStory(story)}>Edit</button>
-                <button onClick={() => onDeleteStory(story.id)}>Delete</button>
+                <button onClick={() => onEditStory(story)} data-testid={`edit-story-${story.id}`}>Edit Story</button>
+                <button onClick={() => onDeleteStory(story.id)} data-testid={`delete-story-${story.id}`}>Delete Story</button>
               </>
             )}
-            <button onClick={() => onUpdateStoryStatus(story.id, "completed")}>
+            <button
+              onClick={() => onUpdateStoryStatus(story.id, "completed")}
+              data-testid={`mark-complete-${story.id}`}
+            >
               Mark Complete
             </button>
           </div>
@@ -76,11 +79,15 @@ jest.mock("../StoryForm", () => {
               status: "pending",
             })
           }
+          data-testid="submit-form"
         >
-          Submit
+          Submit Form
         </button>
         <button
-          onClick={() => onSubmit(Promise.reject(new Error("API Error")))}
+          onClick={() => {
+            const error = new Error("API Error");
+            onSubmit(error).catch(() => {}); // Catch to prevent unhandled promise rejection
+          }}
           data-testid="submit-error"
         >
           Submit Error
@@ -138,6 +145,9 @@ describe("StoryManager Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStoryApi.getStories.mockResolvedValue(mockStories);
+    mockStoryApi.createStory.mockResolvedValue(mockStories[0]);
+    mockStoryApi.updateStory.mockResolvedValue(mockStories[0]);
+    mockStoryApi.deleteStory.mockResolvedValue(undefined);
   });
 
   describe("Component Rendering", () => {
@@ -158,13 +168,13 @@ describe("StoryManager Component", () => {
     it("shows Add Story button only for facilitators", async () => {
       await renderStoryManager({ isFacilitator: true });
 
-      expect(screen.getByRole("button", { name: /add story/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add Story" })).toBeInTheDocument();
     });
 
     it("hides Add Story button for non-facilitators", async () => {
       await renderStoryManager({ isFacilitator: false });
 
-      expect(screen.queryByRole("button", { name: /add story/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Add Story" })).not.toBeInTheDocument();
     });
 
     it("shows floating action button for facilitators on mobile", async () => {
@@ -224,7 +234,7 @@ describe("StoryManager Component", () => {
         expect(mockStoryApi.getStories).toHaveBeenCalledTimes(1);
       });
 
-      fireEvent.click(screen.getByRole("button", { name: /refresh/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
       await waitFor(() => {
         expect(mockStoryApi.getStories).toHaveBeenCalledTimes(2);
@@ -238,7 +248,7 @@ describe("StoryManager Component", () => {
         expect(mockStoryApi.getStories).toHaveBeenCalledTimes(1);
       });
 
-      fireEvent.click(screen.getByText("Refresh List"));
+      fireEvent.click(screen.getByText("Mock Refresh"));
 
       await waitFor(() => {
         expect(mockStoryApi.getStories).toHaveBeenCalledTimes(2);
@@ -250,7 +260,7 @@ describe("StoryManager Component", () => {
     it("opens create form when Add Story button is clicked", async () => {
       await renderStoryManager({ isFacilitator: true });
 
-      fireEvent.click(screen.getByRole("button", { name: /add story/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Add Story" }));
 
       expect(screen.getByTestId("story-form")).toBeInTheDocument();
       expect(screen.getByTestId("form-mode")).toHaveTextContent("create");
@@ -279,10 +289,10 @@ describe("StoryManager Component", () => {
       await renderStoryManager({ isFacilitator: true });
 
       // Open form
-      fireEvent.click(screen.getByRole("button", { name: /add story/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Add Story" }));
 
       // Submit form
-      fireEvent.click(screen.getByRole("button", { name: /submit/i }));
+      fireEvent.click(screen.getByTestId("submit-form"));
 
       await waitFor(() => {
         expect(mockStoryApi.createStory).toHaveBeenCalledWith("session-1", {
@@ -309,7 +319,7 @@ describe("StoryManager Component", () => {
       await renderStoryManager({ isFacilitator: true });
 
       // Open form
-      fireEvent.click(screen.getByRole("button", { name: /add story/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Add Story" }));
 
       // Submit with error
       fireEvent.click(screen.getByTestId("submit-error"));
@@ -329,7 +339,7 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Edit"));
+      fireEvent.click(screen.getByTestId("edit-story-1"));
 
       expect(screen.getByTestId("story-form")).toBeInTheDocument();
       expect(screen.getByTestId("form-mode")).toHaveTextContent("edit");
@@ -348,10 +358,10 @@ describe("StoryManager Component", () => {
       });
 
       // Open edit form
-      fireEvent.click(screen.getByText("Edit"));
+      fireEvent.click(screen.getByTestId("edit-story-1"));
 
       // Submit form
-      fireEvent.click(screen.getByRole("button", { name: /submit/i }));
+      fireEvent.click(screen.getByTestId("submit-form"));
 
       await waitFor(() => {
         expect(mockStoryApi.updateStory).toHaveBeenCalledWith("session-1", "1", {
@@ -378,7 +388,7 @@ describe("StoryManager Component", () => {
       });
 
       // Open edit form
-      fireEvent.click(screen.getByText("Edit"));
+      fireEvent.click(screen.getByTestId("edit-story-1"));
 
       // Submit with error
       fireEvent.click(screen.getByTestId("submit-error"));
@@ -398,9 +408,9 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Delete"));
+      fireEvent.click(screen.getByTestId("delete-story-1"));
 
-      expect(screen.getByText("Delete Story")).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
       expect(screen.getByText(/are you sure you want to delete/i)).toBeInTheDocument();
     });
 
@@ -411,10 +421,18 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Delete"));
+      fireEvent.click(screen.getByTestId("delete-story-1"));
+
+      // Wait for dialog to appear
+      await waitFor(() => {
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+      });
+
       fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
 
-      expect(screen.queryByText("Delete Story")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
     });
 
     it("deletes story successfully", async () => {
@@ -427,7 +445,12 @@ describe("StoryManager Component", () => {
       });
 
       // Open delete dialog
-      fireEvent.click(screen.getByText("Delete"));
+      fireEvent.click(screen.getByTestId("delete-story-1"));
+
+      // Wait for dialog to appear
+      await waitFor(() => {
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+      });
 
       // Confirm delete
       fireEvent.click(screen.getByRole("button", { name: /delete/i }));
@@ -438,7 +461,7 @@ describe("StoryManager Component", () => {
 
       // Dialog should close and stories should reload
       await waitFor(() => {
-        expect(screen.queryByText("Delete Story")).not.toBeInTheDocument();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
 
       await waitFor(() => {
@@ -457,7 +480,12 @@ describe("StoryManager Component", () => {
       });
 
       // Open delete dialog
-      fireEvent.click(screen.getByText("Delete"));
+      fireEvent.click(screen.getByTestId("delete-story-1"));
+
+      // Wait for dialog to appear
+      await waitFor(() => {
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+      });
 
       // Confirm delete
       fireEvent.click(screen.getByRole("button", { name: /delete/i }));
@@ -476,7 +504,15 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Delete"));
+      // Open delete dialog
+      fireEvent.click(screen.getByTestId("delete-story-1"));
+
+      // Wait for dialog to appear
+      await waitFor(() => {
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+      });
+
+      // Confirm delete
       fireEvent.click(screen.getByRole("button", { name: /delete/i }));
 
       await waitFor(() => {
@@ -498,7 +534,7 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Mark Complete"));
+      fireEvent.click(screen.getByTestId("mark-complete-1"));
 
       await waitFor(() => {
         expect(mockStoryApi.updateStory).toHaveBeenCalledWith("session-1", "1", {
@@ -521,7 +557,7 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Mark Complete"));
+      fireEvent.click(screen.getByTestId("mark-complete-1"));
 
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -537,7 +573,7 @@ describe("StoryManager Component", () => {
         expect(screen.getByTestId("story-1")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Mark Complete"));
+      fireEvent.click(screen.getByTestId("mark-complete-1"));
 
       await waitFor(() => {
         expect(screen.getByText("Failed to update story status")).toBeInTheDocument();
@@ -550,7 +586,7 @@ describe("StoryManager Component", () => {
       await renderStoryManager({ isFacilitator: true });
 
       // Open form
-      fireEvent.click(screen.getByRole("button", { name: /add story/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Add Story" }));
       expect(screen.getByTestId("story-form")).toBeInTheDocument();
 
       // Close form
@@ -569,10 +605,10 @@ describe("StoryManager Component", () => {
       await renderStoryManager({ isFacilitator: true });
 
       // Open form
-      fireEvent.click(screen.getByRole("button", { name: /add story/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Add Story" }));
 
       // Submit form
-      fireEvent.click(screen.getByRole("button", { name: /submit/i }));
+      fireEvent.click(screen.getByTestId("submit-form"));
 
       expect(screen.getByTestId("form-loading")).toHaveTextContent("submitting");
     });
@@ -592,7 +628,7 @@ describe("StoryManager Component", () => {
       // Second call succeeds
       mockStoryApi.getStories.mockResolvedValue(mockStories);
 
-      fireEvent.click(screen.getByRole("button", { name: /refresh/i }));
+      fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
       await waitFor(() => {
         expect(screen.queryByText("Load failed")).not.toBeInTheDocument();
