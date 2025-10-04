@@ -114,14 +114,13 @@ describe("StoryForm Component", () => {
     });
 
     it("shows error when title is too long", async () => {
-      const user = userEvent.setup();
       renderStoryForm();
 
       const titleField = screen.getByLabelText(/story title/i);
       const longTitle = "a".repeat(501); // Exceeds 500 character limit
 
-      await user.clear(titleField);
-      await user.type(titleField, longTitle);
+      // Use fireEvent.change for faster input (avoids typing 501 characters)
+      fireEvent.change(titleField, { target: { value: longTitle } });
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
       await waitFor(() => {
@@ -170,8 +169,7 @@ describe("StoryForm Component", () => {
 
       const titleField = screen.getByLabelText(/story title/i);
 
-      // Trigger validation error
-      await user.clear(titleField);
+      // Trigger validation error by submitting empty form
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
       await waitFor(() => {
@@ -179,7 +177,7 @@ describe("StoryForm Component", () => {
       });
 
       // Start typing should clear error
-      await user.type(titleField, "New title");
+      await user.type(titleField, "N");
 
       await waitFor(() => {
         expect(screen.queryByText("Title is required")).not.toBeInTheDocument();
@@ -187,15 +185,14 @@ describe("StoryForm Component", () => {
     });
 
     it("shows validation summary for multiple errors", async () => {
-      const user = userEvent.setup();
       renderStoryForm();
 
       const titleField = screen.getByLabelText(/story title/i);
       const orderField = screen.getByLabelText(/story order/i);
 
-      await user.clear(titleField);
-      await user.clear(orderField);
-      await user.type(orderField, "-1");
+      // Set invalid values directly
+      fireEvent.change(titleField, { target: { value: "" } });
+      fireEvent.change(orderField, { target: { value: "-1" } });
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
       await waitFor(() => {
