@@ -67,6 +67,26 @@ Development environment variables are configured in `docker-compose.yml`. The se
 - Hot reload configurations
 - Debug mode enabled
 
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Development setup and workflow
+- Code quality standards and testing requirements
+- Pull request process and CI/CD checks
+- Code style guidelines for frontend and backend
+- **[CI/SonarCloud Automation Scripts](.github/scripts/README.md)** - Tools to monitor PR status and fix issues
+
+### Quick Start for Contributors
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes and ensure all tests pass
+4. Commit using [Conventional Commits](https://www.conventionalcommits.org/)
+5. Push and create a pull request to the `dev` branch
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
+
 ## Next Steps
 
 This is the foundation setup. Future development will include:
