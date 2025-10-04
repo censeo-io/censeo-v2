@@ -29,7 +29,7 @@ describe("AuthContext", () => {
       user: null,
     });
     mockedAuthApi.login.mockResolvedValue({
-      user: { id: "1", name: "Test User", email: "test@example.com" },
+      user: { id: 1, name: "Test User", email: "test@example.com" },
       session_token: "mock-token",
       message: "Login successful",
     });
@@ -74,7 +74,7 @@ describe("AuthContext", () => {
     test("checks authentication status on mount", async () => {
       mockedAuthApi.getStatus.mockResolvedValue({
         authenticated: true,
-        user: { id: "1", email: "test@example.com", name: "Test User" },
+        user: { id: 1, email: "test@example.com", name: "Test User" },
       });
 
       renderWithProvider();
@@ -105,7 +105,7 @@ describe("AuthContext", () => {
 
     test("handles successful login", async () => {
       const mockUser = {
-        id: "1",
+        id: 1,
         email: "test@example.com",
         name: "Test User",
       };
@@ -149,7 +149,7 @@ describe("AuthContext", () => {
 
       // First setup authenticated state
       const mockUser = {
-        id: "1",
+        id: 1,
         email: "test@example.com",
         name: "Test User",
       };
@@ -178,7 +178,7 @@ describe("AuthContext", () => {
 
     test("persists authentication state in localStorage", async () => {
       const mockUser = {
-        id: "1",
+        id: 1,
         email: "test@example.com",
         name: "Test User",
       };
@@ -201,7 +201,7 @@ describe("AuthContext", () => {
 
     test("restores authentication state from localStorage", () => {
       const mockUser = {
-        id: "1",
+        id: 1,
         email: "test@example.com",
         name: "Test User",
       };

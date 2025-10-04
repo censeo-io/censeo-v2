@@ -49,7 +49,7 @@ def mock_login(request):
 
         return Response(
             {
-                "user_id": str(user.id),
+                "user_id": user.id,
                 "name": f"{user.first_name} {user.last_name}".strip(),
                 "email": user.email,
                 "session_token": request.session.session_key,
@@ -84,7 +84,7 @@ def auth_status(request):
         return Response(
             {
                 "authenticated": True,
-                "user_id": str(request.user.id),
+                "user_id": request.user.id,
                 "name": f"{request.user.first_name} {request.user.last_name}".strip(),
                 "email": request.user.email,
             },
