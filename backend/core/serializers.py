@@ -3,6 +3,7 @@ Handles serialization of models for API responses.
 """
 
 from django.contrib.auth import get_user_model
+from django.db import models
 from rest_framework import serializers
 
 from .models import Session, SessionParticipant, Story, Vote
@@ -146,6 +147,24 @@ class StoryCreateSerializer(serializers.ModelSerializer):
             "story_order",
             "status",
         ]
+
+    def create(self, validated_data):
+        """Create story and auto-calculate order if not provided."""
+        session = validated_data.get("session")
+
+        # If story_order is provided and is not 0, use it
+        # Otherwise, auto-calculate the next order
+        if "story_order" not in validated_data or validated_data["story_order"] == 0:
+            # Get the max order for this session
+            max_order = Story.objects.filter(session=session).aggregate(
+                models.Max("story_order")
+            )["story_order__max"]
+            # Set next order (max + 1, or 0 if no stories exist)
+            validated_data["story_order"] = (
+                (max_order + 1) if max_order is not None else 0
+            )
+
+        return super().create(validated_data)
 
 
 class VoteSerializer(serializers.ModelSerializer):
