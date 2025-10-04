@@ -3,6 +3,7 @@ Handles serialization of models for API responses.
 """
 
 from django.contrib.auth import get_user_model
+from django.db import models
 from rest_framework import serializers
 
 from .models import Session, SessionParticipant, Story, Vote
@@ -118,19 +119,52 @@ class SessionCreateSerializer(serializers.ModelSerializer):
 class StorySerializer(serializers.ModelSerializer):
     """Serializer for Story model."""
 
-    story_id = serializers.UUIDField(source="id", read_only=True)
+    id = serializers.UUIDField(read_only=True)
+    session = serializers.UUIDField(source="session.id", read_only=True)
 
     class Meta:
         model = Story
         fields = [
-            "story_id",
+            "id",
+            "session",
             "title",
             "description",
             "story_order",
             "status",
             "created_at",
         ]
-        read_only_fields = ["story_id", "created_at"]
+        read_only_fields = ["id", "session", "created_at"]
+
+
+class StoryCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating stories."""
+
+    class Meta:
+        model = Story
+        fields = [
+            "title",
+            "description",
+            "story_order",
+            "status",
+        ]
+
+    def create(self, validated_data):
+        """Create story and auto-calculate order if not provided."""
+        session = validated_data.get("session")
+
+        # If story_order is provided and is not 0, use it
+        # Otherwise, auto-calculate the next order
+        if "story_order" not in validated_data or validated_data["story_order"] == 0:
+            # Get the max order for this session
+            max_order = Story.objects.filter(session=session).aggregate(
+                models.Max("story_order")
+            )["story_order__max"]
+            # Set next order (max + 1, or 0 if no stories exist)
+            validated_data["story_order"] = (
+                (max_order + 1) if max_order is not None else 0
+            )
+
+        return super().create(validated_data)
 
 
 class VoteSerializer(serializers.ModelSerializer):

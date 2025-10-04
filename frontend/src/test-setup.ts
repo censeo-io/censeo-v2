@@ -3,12 +3,12 @@
  * This file is imported automatically by Jest before running tests
  */
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Mock window.matchMedia for Material-UI components
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -21,14 +21,14 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock ResizeObserver for Material-UI components
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
 // Setup fetch mock for API testing
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn();
 
 // Mock console methods to reduce noise in tests
 const originalConsole = { ...console };

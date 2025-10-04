@@ -209,7 +209,7 @@ class MockAuthenticationTestCase(APITestCase):
         data = response.json()
 
         self.assertTrue(data["authenticated"])
-        self.assertEqual(data["user_id"], str(user.id))
+        self.assertEqual(data["user_id"], user.id)
         self.assertEqual(data["name"], "Test User")
         self.assertEqual(data["email"], "test@example.com")
 

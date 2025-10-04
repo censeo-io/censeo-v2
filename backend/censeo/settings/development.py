@@ -24,12 +24,16 @@ if config("DATABASE_ENGINE", default="") != "django.db.backends.sqlite3":
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF settings for development
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS",
-    default="https://localhost:3000",
-    cast=lambda v: [s.strip() for s in v.split(",")],
-)
+# Override CORS settings if environment variable is set and not empty
+cors_origins = config("CORS_ALLOWED_ORIGINS", default="")
+if cors_origins:
+    CORS_ALLOWED_ORIGINS = [s.strip() for s in cors_origins.split(",")]
+    CORS_ALLOW_ALL_ORIGINS = False
+
+# CSRF settings for development - only set if environment variable is provided
+csrf_origins = config("CSRF_TRUSTED_ORIGINS", default="")
+if csrf_origins:
+    CSRF_TRUSTED_ORIGINS = [s.strip() for s in csrf_origins.split(",")]
 
 # Logging
 LOGGING = {

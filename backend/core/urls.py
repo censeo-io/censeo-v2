@@ -42,6 +42,17 @@ urlpatterns = [
         api_views.update_session_status,
         name="session_status",
     ),
+    # Story management endpoints
+    path(
+        "sessions/<uuid:session_id>/stories/",
+        api_views.StoryListCreateView.as_view(),
+        name="story_list_create",
+    ),
+    path(
+        "sessions/<uuid:session_id>/stories/<uuid:id>/",
+        api_views.StoryDetailView.as_view(),
+        name="story_detail",
+    ),
     # Health check
     path("health/", views.health_check, name="health_check"),
     # API root
