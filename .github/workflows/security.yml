@@ -14,6 +14,10 @@ jobs:
   dependency-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # Required to upload SARIF results
+      contents: read
+      actions: read
 
     steps:
       - name: Checkout code
@@ -30,6 +34,7 @@ jobs:
       - name: Upload Trivy scan results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true  # Don't fail if upload is not permitted (e.g., on forks)
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -111,6 +116,8 @@ jobs:
   secrets-scan:
     name: Secrets Scanning
     runs-on: ubuntu-latest
+    # Only run on pull requests to avoid BASE/HEAD conflicts on merged branches
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -122,6 +129,6 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: dev
-          head: HEAD
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
           extra_args: --debug --only-verified
