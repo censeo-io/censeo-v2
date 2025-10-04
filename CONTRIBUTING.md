@@ -219,6 +219,23 @@ curl http://localhost:8000/api/health/
 
 ### Before Creating a PR
 
+**Automated Pre-Push Verification (Recommended):**
+
+Run the comprehensive pre-push script that verifies all checks will pass on GitHub Actions:
+
+```bash
+./scripts/pre-push-check.sh
+```
+
+This script runs:
+- Frontend: TypeScript compilation, ESLint, Prettier, tests, build
+- Backend: Ruff linting/formatting, tests, health check
+- Docker Compose: Service status verification
+
+**Manual Verification (Alternative):**
+
+If you prefer to run checks individually:
+
 1. **Run all tests locally:**
    ```bash
    # Frontend
