@@ -103,9 +103,10 @@ const StoryForm: React.FC<StoryFormProps> = ({
       onClose();
     } catch (error) {
       console.error("Error submitting story form:", error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "An unexpected error occurred while saving the story";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while saving the story";
       setSubmitError(errorMessage);
     }
   };
@@ -113,7 +114,9 @@ const StoryForm: React.FC<StoryFormProps> = ({
   const handleInputChange =
     (field: keyof typeof formData) =>
     (
-      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { value: any } },
+      event:
+        | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        | { target: { value: any } },
     ) => {
       const value = event.target.value;
       setFormData((prev) => ({

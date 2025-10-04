@@ -50,14 +50,18 @@ describe("StoryForm Component", () => {
       renderStoryForm();
 
       expect(screen.getByText("Create New Story")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /create story/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /create story/i }),
+      ).toBeInTheDocument();
     });
 
     it("renders edit form when story provided", () => {
       renderStoryForm({ story: mockStory });
 
       expect(screen.getByText("Edit Story")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /update story/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /update story/i }),
+      ).toBeInTheDocument();
     });
 
     it("does not render when open is false", () => {
@@ -70,7 +74,9 @@ describe("StoryForm Component", () => {
       renderStoryForm({ story: mockStory });
 
       expect(screen.getByDisplayValue("Existing Story")).toBeInTheDocument();
-      expect(screen.getByDisplayValue("Existing description")).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue("Existing description"),
+      ).toBeInTheDocument();
       expect(screen.getByDisplayValue("5")).toBeInTheDocument();
       expect(screen.getByDisplayValue("voting")).toBeInTheDocument();
     });
@@ -92,7 +98,9 @@ describe("StoryForm Component", () => {
       renderStoryForm();
 
       const titleField = screen.getByLabelText(/story title/i);
-      const submitButton = screen.getByRole("button", { name: /create story/i });
+      const submitButton = screen.getByRole("button", {
+        name: /create story/i,
+      });
 
       // Clear the title field
       await user.clear(titleField);
@@ -117,7 +125,9 @@ describe("StoryForm Component", () => {
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
       await waitFor(() => {
-        expect(screen.getByText("Title cannot exceed 500 characters")).toBeInTheDocument();
+        expect(
+          screen.getByText("Title cannot exceed 500 characters"),
+        ).toBeInTheDocument();
       });
 
       expect(defaultProps.onSubmit).not.toHaveBeenCalled();
@@ -127,7 +137,9 @@ describe("StoryForm Component", () => {
       const user = userEvent.setup();
       renderStoryForm();
 
-      const orderField = screen.getByLabelText(/story order/i) as HTMLInputElement;
+      const orderField = screen.getByLabelText(
+        /story order/i,
+      ) as HTMLInputElement;
       const titleField = screen.getByLabelText(/story title/i);
 
       // Add a title to avoid title validation errors
@@ -140,8 +152,12 @@ describe("StoryForm Component", () => {
 
       await waitFor(() => {
         // Check for either the specific error or the validation summary
-        const hasSpecificError = screen.queryByText("Story order must be non-negative");
-        const hasValidationSummary = screen.queryByText("Please fix the errors above before submitting.");
+        const hasSpecificError = screen.queryByText(
+          "Story order must be non-negative",
+        );
+        const hasValidationSummary = screen.queryByText(
+          "Please fix the errors above before submitting.",
+        );
         expect(hasSpecificError || hasValidationSummary).toBeTruthy();
       });
 
@@ -183,7 +199,9 @@ describe("StoryForm Component", () => {
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
       await waitFor(() => {
-        expect(screen.getByText("Please fix the errors above before submitting.")).toBeInTheDocument();
+        expect(
+          screen.getByText("Please fix the errors above before submitting."),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -196,7 +214,10 @@ describe("StoryForm Component", () => {
 
       // Fill form
       await user.type(screen.getByLabelText(/story title/i), "New Story");
-      await user.type(screen.getByLabelText(/description/i), "Story description");
+      await user.type(
+        screen.getByLabelText(/description/i),
+        "Story description",
+      );
       await user.clear(screen.getByLabelText(/story order/i));
       await user.type(screen.getByLabelText(/story order/i), "3");
 
@@ -255,8 +276,14 @@ describe("StoryForm Component", () => {
       const mockOnSubmit = jest.fn().mockResolvedValue(undefined);
       renderStoryForm({ onSubmit: mockOnSubmit });
 
-      await user.type(screen.getByLabelText(/story title/i), "  Whitespace Story  ");
-      await user.type(screen.getByLabelText(/description/i), "  Whitespace description  ");
+      await user.type(
+        screen.getByLabelText(/story title/i),
+        "  Whitespace Story  ",
+      );
+      await user.type(
+        screen.getByLabelText(/description/i),
+        "  Whitespace description  ",
+      );
 
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
@@ -272,7 +299,9 @@ describe("StoryForm Component", () => {
 
     it("handles submission errors from onSubmit", async () => {
       const user = userEvent.setup();
-      const mockOnSubmit = jest.fn().mockRejectedValue(new Error("Submission failed"));
+      const mockOnSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error("Submission failed"));
       renderStoryForm({ onSubmit: mockOnSubmit });
 
       await user.type(screen.getByLabelText(/story title/i), "Test Story");
@@ -295,13 +324,19 @@ describe("StoryForm Component", () => {
       fireEvent.click(screen.getByRole("button", { name: /create story/i }));
 
       await waitFor(() => {
-        expect(screen.getByText("An unexpected error occurred while saving the story")).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            "An unexpected error occurred while saving the story",
+          ),
+        ).toBeInTheDocument();
       });
     });
 
     it("clears submit error when user makes changes", async () => {
       const user = userEvent.setup();
-      const mockOnSubmit = jest.fn().mockRejectedValue(new Error("Submission failed"));
+      const mockOnSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error("Submission failed"));
       renderStoryForm({ onSubmit: mockOnSubmit });
 
       const titleField = screen.getByLabelText(/story title/i);
@@ -344,7 +379,9 @@ describe("StoryForm Component", () => {
     it("shows loading button text", () => {
       renderStoryForm({ loading: true });
 
-      expect(screen.getByRole("button", { name: /saving.../i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /saving.../i }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -377,7 +414,9 @@ describe("StoryForm Component", () => {
         </ThemeProvider>,
       );
 
-      expect(screen.queryByDisplayValue("Existing Story")).not.toBeInTheDocument();
+      expect(
+        screen.queryByDisplayValue("Existing Story"),
+      ).not.toBeInTheDocument();
       // Check title field is empty
       const titleField = screen.getByLabelText(/story title/i);
       expect(titleField).toHaveValue("");
@@ -427,15 +466,9 @@ describe("StoryForm Component", () => {
     it("calls onClose when dialog backdrop is clicked", () => {
       renderStoryForm();
 
-      // Find the dialog and simulate backdrop click by clicking on the backdrop element
+      // Simulate backdrop click via Escape key (more user-centric approach)
       const dialog = screen.getByRole("dialog");
-      const backdrop = dialog.parentElement?.querySelector('.MuiBackdrop-root');
-      if (backdrop) {
-        fireEvent.click(backdrop);
-      } else {
-        // Alternative: simulate escape key on the dialog itself
-        fireEvent.keyDown(dialog, { key: "Escape" });
-      }
+      fireEvent.keyDown(dialog, { key: "Escape" });
 
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
@@ -489,15 +522,25 @@ describe("StoryForm Component", () => {
     it("shows helper text for fields", () => {
       renderStoryForm();
 
-      expect(screen.getByText("Enter a clear, concise story title")).toBeInTheDocument();
-      expect(screen.getByText("Order in which this story should be discussed")).toBeInTheDocument();
+      expect(
+        screen.getByText("Enter a clear, concise story title"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Order in which this story should be discussed"),
+      ).toBeInTheDocument();
     });
 
     it("shows placeholder text", () => {
       renderStoryForm();
 
-      expect(screen.getByPlaceholderText("As a user, I want to...")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Add any additional details, acceptance criteria, or notes")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("As a user, I want to..."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(
+          "Add any additional details, acceptance criteria, or notes",
+        ),
+      ).toBeInTheDocument();
     });
   });
 

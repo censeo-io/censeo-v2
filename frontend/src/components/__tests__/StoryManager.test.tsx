@@ -38,14 +38,26 @@ jest.mock("../StoryList", () => {
     return (
       <div data-testid="story-list">
         <div data-testid="story-count">{stories.length}</div>
-        <div data-testid="loading-state">{loading ? "loading" : "not-loading"}</div>
+        <div data-testid="loading-state">
+          {loading ? "loading" : "not-loading"}
+        </div>
         {stories.map((story: Story) => (
           <div key={story.id} data-testid={`story-${story.id}`}>
             <span>{story.title}</span>
             {isFacilitator && (
               <>
-                <button onClick={() => onEditStory(story)} data-testid={`edit-story-${story.id}`}>Edit Story</button>
-                <button onClick={() => onDeleteStory(story.id)} data-testid={`delete-story-${story.id}`}>Delete Story</button>
+                <button
+                  onClick={() => onEditStory(story)}
+                  data-testid={`edit-story-${story.id}`}
+                >
+                  Edit Story
+                </button>
+                <button
+                  onClick={() => onDeleteStory(story.id)}
+                  data-testid={`delete-story-${story.id}`}
+                >
+                  Delete Story
+                </button>
               </>
             )}
             <button
@@ -63,12 +75,20 @@ jest.mock("../StoryList", () => {
 });
 
 jest.mock("../StoryForm", () => {
-  return function MockStoryForm({ open, story, onClose, onSubmit, loading }: any) {
+  return function MockStoryForm({
+    open,
+    story,
+    onClose,
+    onSubmit,
+    loading,
+  }: any) {
     if (!open) return null;
     return (
       <div data-testid="story-form">
         <div data-testid="form-mode">{story ? "edit" : "create"}</div>
-        <div data-testid="form-loading">{loading ? "submitting" : "not-submitting"}</div>
+        <div data-testid="form-loading">
+          {loading ? "submitting" : "not-submitting"}
+        </div>
         <button onClick={onClose}>Cancel</button>
         <button
           onClick={() =>
@@ -118,7 +138,9 @@ const mockStories: Story[] = [
   },
 ];
 
-const renderStoryManager = async (props: { sessionId?: string; isFacilitator?: boolean } = {}) => {
+const renderStoryManager = async (
+  props: { sessionId?: string; isFacilitator?: boolean } = {},
+) => {
   const defaultProps = {
     sessionId: "session-1",
     isFacilitator: false,
@@ -135,7 +157,9 @@ const renderStoryManager = async (props: { sessionId?: string; isFacilitator?: b
 
   // Wait for initial loading to complete - this allows async operations to finish
   await waitFor(() => {
-    expect(screen.getByTestId("loading-state")).toHaveTextContent("not-loading");
+    expect(screen.getByTestId("loading-state")).toHaveTextContent(
+      "not-loading",
+    );
   });
 
   return view;
@@ -162,19 +186,25 @@ describe("StoryManager Component", () => {
     it("shows refresh button for all users", async () => {
       await renderStoryManager();
 
-      expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Refresh" }),
+      ).toBeInTheDocument();
     });
 
     it("shows Add Story button only for facilitators", async () => {
       await renderStoryManager({ isFacilitator: true });
 
-      expect(screen.getByRole("button", { name: "Add Story" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Add Story" }),
+      ).toBeInTheDocument();
     });
 
     it("hides Add Story button for non-facilitators", async () => {
       await renderStoryManager({ isFacilitator: false });
 
-      expect(screen.queryByRole("button", { name: "Add Story" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Add Story" }),
+      ).not.toBeInTheDocument();
     });
 
     it("shows floating action button for facilitators on mobile", async () => {
@@ -364,12 +394,16 @@ describe("StoryManager Component", () => {
       fireEvent.click(screen.getByTestId("submit-form"));
 
       await waitFor(() => {
-        expect(mockStoryApi.updateStory).toHaveBeenCalledWith("session-1", "1", {
-          title: "Test Story",
-          description: "Test Description",
-          story_order: 1,
-          status: "pending",
-        });
+        expect(mockStoryApi.updateStory).toHaveBeenCalledWith(
+          "session-1",
+          "1",
+          {
+            title: "Test Story",
+            description: "Test Description",
+            story_order: 1,
+            status: "pending",
+          },
+        );
       });
 
       // Form should close and stories should reload
@@ -411,7 +445,9 @@ describe("StoryManager Component", () => {
       fireEvent.click(screen.getByTestId("delete-story-1"));
 
       expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByText(/are you sure you want to delete/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/are you sure you want to delete/i),
+      ).toBeInTheDocument();
     });
 
     it("cancels delete operation", async () => {
@@ -537,9 +573,13 @@ describe("StoryManager Component", () => {
       fireEvent.click(screen.getByTestId("mark-complete-1"));
 
       await waitFor(() => {
-        expect(mockStoryApi.updateStory).toHaveBeenCalledWith("session-1", "1", {
-          status: "completed",
-        });
+        expect(mockStoryApi.updateStory).toHaveBeenCalledWith(
+          "session-1",
+          "1",
+          {
+            status: "completed",
+          },
+        );
       });
 
       await waitFor(() => {
@@ -576,7 +616,9 @@ describe("StoryManager Component", () => {
       fireEvent.click(screen.getByTestId("mark-complete-1"));
 
       await waitFor(() => {
-        expect(screen.getByText("Failed to update story status")).toBeInTheDocument();
+        expect(
+          screen.getByText("Failed to update story status"),
+        ).toBeInTheDocument();
       });
     });
   });
@@ -610,7 +652,9 @@ describe("StoryManager Component", () => {
       // Submit form
       fireEvent.click(screen.getByTestId("submit-form"));
 
-      expect(screen.getByTestId("form-loading")).toHaveTextContent("submitting");
+      expect(screen.getByTestId("form-loading")).toHaveTextContent(
+        "submitting",
+      );
     });
   });
 

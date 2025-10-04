@@ -79,15 +79,21 @@ describe("StoryList Component", () => {
     it("renders story descriptions when present", () => {
       renderStoryList();
 
-      expect(screen.getByText("Description of first story")).toBeInTheDocument();
-      expect(screen.getByText("Description of second story")).toBeInTheDocument();
+      expect(
+        screen.getByText("Description of first story"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Description of second story"),
+      ).toBeInTheDocument();
     });
 
     it("does not render description for stories without description", () => {
       renderStoryList();
 
       // Third story has empty description, should not show
-      expect(screen.queryByText("Description of third story")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Description of third story"),
+      ).not.toBeInTheDocument();
     });
 
     it("displays story order and creation date", () => {
@@ -126,19 +132,27 @@ describe("StoryList Component", () => {
     it("shows empty state message for non-facilitators", () => {
       renderStoryList({ stories: [], isFacilitator: false });
 
-      expect(screen.getByText("No stories have been added to this session yet.")).toBeInTheDocument();
+      expect(
+        screen.getByText("No stories have been added to this session yet."),
+      ).toBeInTheDocument();
     });
 
     it("shows empty state message with facilitator hint", () => {
       renderStoryList({ stories: [], isFacilitator: true });
 
-      expect(screen.getByText(/No stories have been added to this session yet. Add your first story to get started!/)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /No stories have been added to this session yet. Add your first story to get started!/,
+        ),
+      ).toBeInTheDocument();
     });
 
     it("does not show empty state when loading", () => {
       renderStoryList({ stories: [], loading: true });
 
-      expect(screen.queryByText("No stories have been added")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("No stories have been added"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -153,7 +167,9 @@ describe("StoryList Component", () => {
     it("shows retry button when error present", () => {
       renderStoryList({ error: "Some error" });
 
-      expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /retry/i }),
+      ).toBeInTheDocument();
     });
 
     it("calls onRefresh when retry button clicked", () => {
@@ -260,7 +276,10 @@ describe("StoryList Component", () => {
 
     it("calls onDeleteStory when Delete Story clicked", () => {
       const mockOnDeleteStory = jest.fn();
-      renderStoryList({ isFacilitator: true, onDeleteStory: mockOnDeleteStory });
+      renderStoryList({
+        isFacilitator: true,
+        onDeleteStory: mockOnDeleteStory,
+      });
 
       const menuButtons = screen.getAllByRole("button");
       fireEvent.click(menuButtons[1]);
@@ -272,7 +291,10 @@ describe("StoryList Component", () => {
 
     it("calls onUpdateStoryStatus when Start Voting clicked", () => {
       const mockOnUpdateStoryStatus = jest.fn();
-      renderStoryList({ isFacilitator: true, onUpdateStoryStatus: mockOnUpdateStoryStatus });
+      renderStoryList({
+        isFacilitator: true,
+        onUpdateStoryStatus: mockOnUpdateStoryStatus,
+      });
 
       const menuButtons = screen.getAllByRole("button");
       fireEvent.click(menuButtons[0]); // First story (pending)
@@ -284,7 +306,10 @@ describe("StoryList Component", () => {
 
     it("calls onUpdateStoryStatus when Mark Complete clicked", () => {
       const mockOnUpdateStoryStatus = jest.fn();
-      renderStoryList({ isFacilitator: true, onUpdateStoryStatus: mockOnUpdateStoryStatus });
+      renderStoryList({
+        isFacilitator: true,
+        onUpdateStoryStatus: mockOnUpdateStoryStatus,
+      });
 
       const menuButtons = screen.getAllByRole("button");
       fireEvent.click(menuButtons[1]); // Second story (voting)
@@ -359,7 +384,9 @@ describe("StoryList Component", () => {
     it("handles empty story list", () => {
       renderStoryList({ stories: [] });
 
-      expect(screen.getByText(/No stories have been added/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/No stories have been added/),
+      ).toBeInTheDocument();
     });
 
     it("handles stories with very long titles", () => {
@@ -381,7 +408,9 @@ describe("StoryList Component", () => {
 
       renderStoryList({ stories: [specialCharStory] });
 
-      expect(screen.getByText("Story with émojis 🚀 & <special> chars")).toBeInTheDocument();
+      expect(
+        screen.getByText("Story with émojis 🚀 & <special> chars"),
+      ).toBeInTheDocument();
     });
 
     it("handles story order edge cases", () => {
