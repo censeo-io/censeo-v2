@@ -432,7 +432,7 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = self.get_serializer(story, data=request.data)
+        serializer = self.get_serializer(story, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 

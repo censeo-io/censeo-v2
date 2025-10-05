@@ -2,19 +2,13 @@
  * Voting E2E Tests
  * Tests the voting functionality including submitting votes,
  * updating votes, and viewing results
- *
- * TODO: Additional tests to add after fixing story refresh issue:
- * - Full voting workflow with story status updates
- * - Multi-user voting scenarios
- * - Vote updates before reveal
- * - Vote reveal and results display
  */
 
 import { test, expect } from "@playwright/test";
 import { login, createSession } from "../utils/test-helpers";
 
 test.describe("Voting Tests", () => {
-  test.skip("should allow facilitator to start voting and submit a vote", async ({
+  test("should allow facilitator to start voting and submit a vote", async ({
     page,
   }) => {
     // Login as facilitator
@@ -60,7 +54,7 @@ test.describe("Voting Tests", () => {
     await expect(page.locator('text="1 of 1 voted"')).toBeVisible();
   });
 
-  test.skip("should allow updating a vote before reveal", async ({ page }) => {
+  test("should allow updating a vote before reveal", async ({ page }) => {
     // Login and setup
     await login(page, {
       name: "Voter",
@@ -94,7 +88,7 @@ test.describe("Voting Tests", () => {
     await expect(page.locator('text="1 of 1 voted"')).toBeVisible();
   });
 
-  test.skip("should hide vote details before reveal and show after completion", async ({
+  test("should hide vote details before reveal and show after completion", async ({
     page,
   }) => {
     // Login and setup
