@@ -1,0 +1,28 @@
+{
+  "name": "censeo",
+  "version": "1.0.0",
+  "description": "A story pointing application that helps agile development teams collaboratively estimate work through blind voting sessions.",
+  "main": "index.js",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/censeo-io/censeo-v2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/censeo-io/censeo-v2/issues"
+  },
+  "homepage": "https://github.com/censeo-io/censeo-v2#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.55.1"
+  }
+}

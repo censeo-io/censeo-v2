@@ -9,8 +9,11 @@ censeo/
 ├── backend/           # Django REST API
 ├── frontend/          # React TypeScript application
 ├── database/          # PostgreSQL initialization scripts
+├── e2e/              # Playwright integration tests
+├── .github/          # GitHub Actions workflows and automation scripts
+├── scripts/          # Development and CI scripts
 ├── docker-compose.yml # Development environment
-└── test_docker_setup.py # Docker configuration tests
+└── playwright.config.ts # Playwright test configuration
 ```
 
 ## Development Setup
@@ -18,7 +21,8 @@ censeo/
 ### Prerequisites
 
 - Docker and Docker Compose
-- Python 3.11+ (for running tests locally)
+- Node.js 18.x or 20.x (for frontend and integration tests)
+- Python 3.11+ (for backend development)
 
 ### Quick Start
 
@@ -35,15 +39,39 @@ censeo/
 
 ### Running Tests
 
-Run Docker configuration tests:
+**Frontend Unit Tests:**
 ```bash
-python test_docker_setup.py
+cd frontend
+npm test -- --watchAll=false
 ```
 
-Run integration tests (requires containers to be running):
+**Backend Unit Tests:**
 ```bash
-pytest test_docker_setup.py -m integration
+docker-compose exec backend python -m pytest -xvs
 ```
+
+**Integration Tests (E2E):**
+```bash
+# Ensure Docker services are running
+docker-compose up -d
+
+# Run Playwright integration tests
+npm run test:e2e
+
+# Run with UI (interactive mode)
+npm run test:e2e:ui
+
+# Run in headed mode (see browser)
+npm run test:e2e:headed
+```
+
+**Pre-Push Verification:**
+```bash
+# Run all checks (unit tests + integration tests + linting + build)
+./scripts/pre-push-check.sh
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed testing guidelines.
 
 ## Development Workflow
 
@@ -87,11 +115,19 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
-## Next Steps
+## Features
 
-This is the foundation setup. Future development will include:
-1. Django project initialization with models
-2. React app with Material-UI components
-3. REST API endpoints for story pointing
-4. Authentication system
-5. Real-time updates with Socket.IO
+✅ **Implemented:**
+- User authentication and session management
+- Session creation and management
+- Story pointing interface with Material-UI
+- Real-time session updates
+- Comprehensive test coverage (unit + integration)
+- CI/CD with GitHub Actions
+- Code quality monitoring with SonarCloud
+
+🚧 **In Development:**
+- Real-time voting with WebSockets
+- Multi-user session participation
+- Story estimation history and analytics
+- Export session results

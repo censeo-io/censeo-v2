@@ -126,6 +126,14 @@ else
     print_error "Backend API health check failed"
 fi
 
+# Integration tests (E2E)
+print_section "11. Integration Tests (Playwright)"
+if npm run test:e2e; then
+    print_success "All integration tests passed"
+else
+    print_error "Integration tests failed"
+fi
+
 # Final summary
 print_section "Pre-Push Verification Summary"
 

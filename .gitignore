@@ -58,6 +58,12 @@ job-logs.txt
 backend/coverage.xml
 backend/htmlcov/
 
+# Playwright
+test-results/
+playwright-report/
+.playwright-mcp/
+Screenshot*.png
+
 # Other
 .op/
 CLAUDE.md
