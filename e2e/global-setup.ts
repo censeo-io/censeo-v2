@@ -11,7 +11,7 @@ async function globalSetup(config: FullConfig) {
 
   // Check if Docker services are running
   try {
-    const output = execSync('docker-compose ps --services --filter "status=running"', {
+    const output = execSync('docker compose ps --services --filter "status=running"', {
       encoding: 'utf-8',
       cwd: process.cwd()
     });
@@ -19,7 +19,7 @@ async function globalSetup(config: FullConfig) {
     const runningServices = output.trim().split('\n').filter(s => s);
 
     if (!runningServices.includes('backend') || !runningServices.includes('frontend')) {
-      console.error('❌ Docker services not running. Please run: docker-compose up');
+      console.error('❌ Docker services not running. Please run: docker compose up');
       process.exit(1);
     }
 
@@ -33,7 +33,7 @@ async function globalSetup(config: FullConfig) {
   try {
     console.log('🗄️  Resetting database...');
 
-    execSync('docker-compose exec -T backend python manage.py flush --no-input', {
+    execSync('docker compose exec -T backend python manage.py flush --no-input', {
       encoding: 'utf-8',
       cwd: process.cwd()
     });
