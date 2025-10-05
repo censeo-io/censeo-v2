@@ -23,6 +23,7 @@ import {
   UpdateStoryRequest,
   StoryListResponse,
 } from "../types/story";
+import { Vote, VoteSubmitRequest, VotingStatusResponse } from "../types/vote";
 
 // API base URL from environment or default to localhost
 const API_BASE_URL =
@@ -311,6 +312,24 @@ export const storyApi = {
   async deleteStory(sessionId: string, storyId: string): Promise<void> {
     return handleApiRequest<void>(
       apiClient.delete(`/sessions/${sessionId}/stories/${storyId}/`),
+    );
+  },
+};
+
+// Vote API methods
+export const voteApi = {
+  async submitVote(
+    storyId: string,
+    voteData: VoteSubmitRequest,
+  ): Promise<Vote> {
+    return handleApiRequest<Vote>(
+      apiClient.post(`/stories/${storyId}/votes/`, voteData),
+    );
+  },
+
+  async getVotingStatus(storyId: string): Promise<VotingStatusResponse> {
+    return handleApiRequest<VotingStatusResponse>(
+      apiClient.get(`/stories/${storyId}/votes/`),
     );
   },
 };

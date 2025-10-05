@@ -171,9 +171,10 @@ class VoteSerializer(serializers.ModelSerializer):
     """Serializer for Vote model."""
 
     vote_id = serializers.UUIDField(source="id", read_only=True)
+    story = serializers.UUIDField(source="story.id", read_only=True)
     user = UserSerializer(read_only=True)
 
     class Meta:
         model = Vote
-        fields = ["vote_id", "user", "points", "created_at"]
-        read_only_fields = ["vote_id", "user", "created_at"]
+        fields = ["vote_id", "story", "user", "points", "created_at"]
+        read_only_fields = ["vote_id", "story", "user", "created_at"]
