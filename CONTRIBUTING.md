@@ -188,32 +188,169 @@ All PRs are analyzed by SonarCloud for:
 
 ### Running Tests
 
-**Frontend (local):**
+**Frontend Unit Tests (local):**
 ```bash
 cd frontend
 npm test -- --watchAll=false --ci
 ```
 
-**Backend (Docker):**
+**Backend Unit Tests (Docker):**
 ```bash
 docker-compose exec backend python -m pytest -xvs
 ```
 
-**Integration Tests:**
+**Integration Tests (Playwright):**
 ```bash
+# Prerequisites: Docker services must be running
 docker-compose up -d
-# Wait for services to be ready
-docker-compose exec backend python manage.py check
-curl http://localhost:8000/api/health/
+
+# Run all integration tests
+npm run test:e2e
+
+# Run with UI (interactive)
+npm run test:e2e:ui
+
+# Run in headed mode (see browser)
+npm run test:e2e:headed
+
+# Debug mode
+npm run test:e2e:debug
+
+# View test report
+npm run test:e2e:report
 ```
 
 ### Test Requirements
 
 - **All tests must pass** before creating a PR
+  - Unit tests (frontend + backend)
+  - Integration tests (Playwright)
 - Write tests for new features
 - Update tests when modifying existing features
 - Use React Testing Library best practices for frontend tests
 - Use pytest fixtures for backend tests
+- **Write integration tests for user-facing features**
+
+### Integration Testing Guidelines
+
+**When to Write Integration Tests:**
+
+✅ **Always write integration tests for:**
+- New user-facing features (forms, workflows, interactions)
+- Authentication and authorization flows
+- Critical user paths (login, create session, vote, etc.)
+- Features that span frontend + backend + database
+- Bug fixes that affect user workflows
+
+❌ **Skip integration tests for:**
+- Internal utilities or helpers
+- Styling-only changes
+- Configuration changes
+- Documentation updates
+
+**How to Write Integration Tests:**
+
+1. **Use the test helpers** in `e2e/utils/test-helpers.ts`:
+   ```typescript
+   import { login, createSession, generateTestUser } from '../utils/test-helpers';
+
+   test('my feature works', async ({ page }) => {
+     const user = generateTestUser();
+     await login(page, user);
+     // ... test your feature
+   });
+   ```
+
+2. **Follow the Arrange-Act-Assert pattern:**
+   ```typescript
+   test('should create a story', async ({ page }) => {
+     // Arrange: Set up test data and login
+     const user = generateTestUser();
+     await login(page, user);
+     await createSession(page, 'Test Session');
+
+     // Act: Perform the action
+     await page.getByRole('button', { name: 'Add Story' }).click();
+     await page.getByRole('textbox', { name: 'Title' }).fill('My Story');
+     await page.getByRole('button', { name: 'Create' }).click();
+
+     // Assert: Verify the outcome
+     await expect(page.getByText('My Story')).toBeVisible();
+   });
+   ```
+
+3. **Test both happy path and edge cases:**
+   ```typescript
+   test.describe('Story Creation', () => {
+     test('should create story with valid data', async ({ page }) => {
+       // Happy path
+     });
+
+     test('should show error for empty title', async ({ page }) => {
+       // Edge case: validation
+     });
+
+     test('should enforce character limits', async ({ page }) => {
+       // Edge case: boundaries
+     });
+   });
+   ```
+
+4. **Use descriptive test names:**
+   - ✅ Good: `should prevent voting before session starts`
+   - ❌ Bad: `test voting`
+
+5. **Keep tests independent:**
+   - Each test should work in isolation
+   - Don't rely on previous test state
+   - Use `generateTestUser()` and `generateSessionName()` for unique data
+
+**Where to Add Tests:**
+- Smoke tests: `e2e/tests/smoke.spec.ts` (critical paths only)
+- Feature tests: `e2e/tests/feature-name.spec.ts` (dedicated file per major feature)
+
+**Example Test File:**
+```typescript
+import { test, expect } from '@playwright/test';
+import { login, createSession, generateTestUser, generateSessionName } from '../utils/test-helpers';
+
+test.describe('Story Management', () => {
+  test.beforeEach(async ({ page }) => {
+    const user = generateTestUser();
+    await login(page, user);
+    await createSession(page, generateSessionName());
+  });
+
+  test('should add a new story', async ({ page }) => {
+    await page.getByRole('button', { name: 'Add Story' }).click();
+    await page.getByRole('textbox', { name: 'Title' }).fill('User Login');
+    await page.getByRole('textbox', { name: 'Description' }).fill('As a user, I want to login');
+    await page.getByRole('button', { name: 'Create Story' }).click();
+
+    await expect(page.getByText('User Login')).toBeVisible();
+  });
+
+  test('should edit an existing story', async ({ page }) => {
+    // Add story first
+    // ... edit logic
+  });
+
+  test('should delete a story', async ({ page }) => {
+    // Add story first
+    // ... delete logic
+  });
+});
+```
+
+**Debugging Integration Tests:**
+
+When tests fail:
+1. Check `test-results/` for screenshots and videos
+2. Run with `--headed` to see the browser
+3. Use `--debug` to step through the test
+4. Check Docker logs: `docker-compose logs backend frontend`
+
+See `e2e/tests/README.md` for complete integration testing documentation.
 
 ## Pull Request Process
 
@@ -228,8 +365,9 @@ Run the comprehensive pre-push script that verifies all checks will pass on GitH
 ```
 
 This script runs:
-- Frontend: TypeScript compilation, ESLint, Prettier, tests, build
-- Backend: Ruff linting/formatting, tests, health check
+- Frontend: TypeScript compilation, ESLint, Prettier, unit tests, build
+- Backend: Ruff linting/formatting, unit tests, health check
+- Integration Tests: Playwright E2E tests
 - Docker Compose: Service status verification
 
 **Manual Verification (Alternative):**

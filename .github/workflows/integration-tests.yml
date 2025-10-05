@@ -1,0 +1,128 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [dev, staging, prod]
+  workflow_dispatch:
+
+# Ensure only one integration test workflow runs at a time per PR
+concurrency:
+  group: integration-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-tests:
+    name: Playwright Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install root dependencies (Playwright)
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create backend .env file
+        run: |
+          cp backend/.env.example backend/.env
+
+      - name: Start Docker Compose services
+        run: |
+          docker compose up -d --build
+          echo "Waiting for services to be ready..."
+          sleep 10
+
+      - name: Wait for backend to be ready
+        run: |
+          echo "Checking backend health..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/api/health/ 2>/dev/null; then
+              echo "Backend is ready!"
+              exit 0
+            fi
+            echo "Waiting for backend... (attempt $i/30)"
+            sleep 2
+          done
+          echo "Backend failed to start"
+          docker compose logs backend
+          exit 1
+
+      - name: Wait for frontend to be ready
+        run: |
+          echo "Checking frontend..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000 2>/dev/null; then
+              echo "Frontend is ready!"
+              exit 0
+            fi
+            echo "Waiting for frontend... (attempt $i/30)"
+            sleep 2
+          done
+          echo "Frontend failed to start"
+          docker compose logs frontend
+          exit 1
+
+      - name: Run database migrations
+        run: |
+          docker compose exec -T backend python manage.py migrate --no-input
+
+      - name: Verify database connection
+        run: |
+          docker compose exec -T backend python manage.py check
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend Logs ==="
+          docker compose logs backend
+          echo "=== Frontend Logs ==="
+          docker compose logs frontend
+          echo "=== Database Logs ==="
+          docker compose logs database
+
+      - name: Cleanup Docker services
+        if: always()
+        run: docker compose down -v
