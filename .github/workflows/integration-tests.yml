@@ -50,7 +50,7 @@ jobs:
 
       - name: Start Docker Compose services
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
           echo "Waiting for services to be ready..."
           sleep 10
 
@@ -66,7 +66,7 @@ jobs:
             sleep 2
           done
           echo "Backend failed to start"
-          docker-compose logs backend
+          docker compose logs backend
           exit 1
 
       - name: Wait for frontend to be ready
@@ -81,16 +81,16 @@ jobs:
             sleep 2
           done
           echo "Frontend failed to start"
-          docker-compose logs frontend
+          docker compose logs frontend
           exit 1
 
       - name: Run database migrations
         run: |
-          docker-compose exec -T backend python manage.py migrate --no-input
+          docker compose exec -T backend python manage.py migrate --no-input
 
       - name: Verify database connection
         run: |
-          docker-compose exec -T backend python manage.py check
+          docker compose exec -T backend python manage.py check
 
       - name: Run Playwright tests
         run: npm run test:e2e
@@ -117,12 +117,12 @@ jobs:
         if: failure()
         run: |
           echo "=== Backend Logs ==="
-          docker-compose logs backend
+          docker compose logs backend
           echo "=== Frontend Logs ==="
-          docker-compose logs frontend
+          docker compose logs frontend
           echo "=== Database Logs ==="
-          docker-compose logs database
+          docker compose logs database
 
       - name: Cleanup Docker services
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
