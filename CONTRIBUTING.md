@@ -183,8 +183,12 @@ All PRs are analyzed by SonarCloud for:
 
 ### Test Coverage Requirements
 
+**CRITICAL:** SonarCloud Quality Gate will fail PRs that don't meet coverage requirements.
+
 - **Frontend:** Minimum 80% coverage for new code
 - **Backend:** Minimum 80% coverage for new code
+
+All new code must include comprehensive tests. PRs with insufficient coverage will be blocked from merging.
 
 ### Running Tests
 

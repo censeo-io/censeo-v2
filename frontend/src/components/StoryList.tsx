@@ -27,6 +27,7 @@ import {
   CheckCircle as CompleteIcon,
 } from "@mui/icons-material";
 import { Story } from "../types/story";
+import VotingPanel from "./VotingPanel";
 
 interface StoryListProps {
   stories: Story[];
@@ -182,6 +183,17 @@ const StoryList: React.FC<StoryListProps> = ({
                     {story.description}
                   </Typography>
                 )}
+
+                {/* Voting Panel - shown for voting and completed stories */}
+                {(story.status === "voting" ||
+                  story.status === "completed") && (
+                  <VotingPanel
+                    storyId={story.id}
+                    storyStatus={story.status}
+                    onVoteSubmitted={onRefresh}
+                  />
+                )}
+
                 <Typography variant="caption" color="text.secondary">
                   Order: #{story.story_order} • Created:{" "}
                   {new Date(story.created_at).toLocaleDateString()}
@@ -191,6 +203,8 @@ const StoryList: React.FC<StoryListProps> = ({
                 <IconButton
                   onClick={(e) => handleMenuOpen(e, story)}
                   size="small"
+                  aria-label="Story actions"
+                  data-testid={`story-actions-${story.id}`}
                 >
                   <MoreVertIcon />
                 </IconButton>

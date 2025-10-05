@@ -53,6 +53,12 @@ urlpatterns = [
         api_views.StoryDetailView.as_view(),
         name="story_detail",
     ),
+    # Voting endpoints
+    path(
+        "stories/<uuid:story_id>/votes/",
+        api_views.VoteListCreateView.as_view(),
+        name="vote_list_create",
+    ),
     # Health check
     path("health/", views.health_check, name="health_check"),
     # API root

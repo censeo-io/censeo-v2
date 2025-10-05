@@ -10,13 +10,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Session, SessionParticipant, Story
+from .models import Session, SessionParticipant, Story, Vote
 from .serializers import (
     SessionCreateSerializer,
     SessionParticipantSerializer,
     SessionSerializer,
     StoryCreateSerializer,
     StorySerializer,
+    VoteSerializer,
 )
 
 # Error message constants
@@ -431,7 +432,7 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = self.get_serializer(story, data=request.data)
+        serializer = self.get_serializer(story, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -463,3 +464,126 @@ class StoryDetailView(generics.RetrieveUpdateDestroyAPIView):
                 {"error": STORY_NOT_FOUND_ERROR},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+
+class VoteListCreateView(APIView):
+    """Submit/update votes and retrieve voting status.
+    GET: Get voting status (vote count, participants, revealed votes if completed)
+    POST: Submit or update a vote
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_story(self, story_id):
+        """Get story and validate it exists."""
+        try:
+            return get_object_or_404(Story, id=story_id)
+        except ValueError:
+            return None
+
+    def check_participant_access(self, story, user):
+        """Check if user is a participant in the story's session."""
+        return story.session.participants.filter(id=user.id).exists()
+
+    def get(self, request, story_id):
+        """Get voting status for a story."""
+        story = self.get_story(story_id)
+        if not story:
+            return Response(
+                {"error": "Invalid story ID format."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Check if user has access (must be participant)
+        if not self.check_participant_access(story, request.user):
+            return Response(
+                {"error": "You do not have access to this story."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get all votes for this story
+        votes = Vote.objects.filter(story=story).select_related("user")
+        votes_count = votes.count()
+
+        # Get total participants in the session
+        total_participants = story.session.participants.count()
+
+        # Determine if votes are revealed (story is completed)
+        revealed = story.status == "completed"
+
+        # Build response
+        response_data = {
+            "votes_count": votes_count,
+            "total_participants": total_participants,
+            "revealed": revealed,
+        }
+
+        # If votes are revealed, include vote details
+        if revealed:
+            serializer = VoteSerializer(votes, many=True)
+            response_data["votes"] = serializer.data
+        else:
+            # Before reveal, don't show vote details
+            response_data["votes"] = []
+
+        return Response(response_data)
+
+    def post(self, request, story_id):
+        """Submit or update a vote."""
+        story = self.get_story(story_id)
+        if not story:
+            return Response(
+                {"error": "Story not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user = request.user
+
+        # Check if user is a participant
+        if not self.check_participant_access(story, user):
+            return Response(
+                {"error": "You must be a participant to vote."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Check if story is in voting status
+        if story.status != "voting":
+            return Response(
+                {"error": "Cannot vote on stories that are not in voting status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get points from request
+        points = request.data.get("points")
+        if not points:
+            return Response(
+                {"points": ["This field is required."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate points (Fibonacci scale)
+        valid_points = ["1", "2", "3", "5", "8", "13", "21", "?"]
+        if points not in valid_points:
+            return Response(
+                {
+                    "points": [
+                        f"Invalid choice. Must be one of: {', '.join(valid_points)}"
+                    ]
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if user has already voted
+        existing_vote = Vote.objects.filter(story=story, user=user).first()
+
+        if existing_vote:
+            # Update existing vote
+            existing_vote.points = points
+            existing_vote.save()
+            serializer = VoteSerializer(existing_vote)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Create new vote
+            vote = Vote.objects.create(story=story, user=user, points=points)
+            serializer = VoteSerializer(vote)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)

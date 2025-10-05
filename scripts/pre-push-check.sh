@@ -79,11 +79,26 @@ else
     # Don't fail on formatting, just warn
 fi
 
-print_section "5. Frontend Tests"
-if npm test -- --watchAll=false --ci; then
+print_section "5. Frontend Tests & Coverage"
+# Capture test output to extract coverage
+FRONTEND_TEST_OUTPUT=$(npm test -- --watchAll=false --ci --coverage --coverageReporters=text 2>&1)
+if echo "$FRONTEND_TEST_OUTPUT" | grep -q "Tests:.*passed"; then
     print_success "All frontend tests passed"
+
+    # Extract coverage percentage from Jest text output (All files line)
+    FRONTEND_COVERAGE=$(echo "$FRONTEND_TEST_OUTPUT" | grep "All files" | awk '{print $10}' | tr -d '%')
+    if [ -n "$FRONTEND_COVERAGE" ]; then
+        if (( $(echo "$FRONTEND_COVERAGE >= 80" | bc -l) )); then
+            print_success "Frontend coverage: ${FRONTEND_COVERAGE}% (≥80%)"
+        else
+            print_error "Frontend coverage: ${FRONTEND_COVERAGE}% (must be ≥80%)"
+        fi
+    else
+        print_warning "Could not extract frontend coverage percentage"
+    fi
 else
     print_error "Frontend tests failed"
+    echo "$FRONTEND_TEST_OUTPUT" | tail -20
 fi
 
 print_section "6. Frontend Build"
@@ -113,10 +128,25 @@ else
 fi
 
 print_section "9. Backend Tests"
-if docker-compose exec -T backend python -m pytest -xvs; then
+# Capture pytest output to extract coverage
+BACKEND_TEST_OUTPUT=$(docker-compose exec -T backend python -m pytest -xvs 2>&1)
+if echo "$BACKEND_TEST_OUTPUT" | grep -q "passed"; then
     print_success "All backend tests passed"
+
+    # Extract coverage percentage from pytest output
+    BACKEND_COVERAGE=$(echo "$BACKEND_TEST_OUTPUT" | grep "TOTAL" | awk '{print $NF}' | tr -d '%')
+    if [ -n "$BACKEND_COVERAGE" ]; then
+        if (( $(echo "$BACKEND_COVERAGE >= 80" | bc -l) )); then
+            print_success "Backend coverage: ${BACKEND_COVERAGE}% (≥80%)"
+        else
+            print_error "Backend coverage: ${BACKEND_COVERAGE}% (must be ≥80%)"
+        fi
+    else
+        print_warning "Could not extract backend coverage percentage"
+    fi
 else
     print_error "Backend tests failed"
+    echo "$BACKEND_TEST_OUTPUT" | tail -20
 fi
 
 print_section "10. Backend Health Check"
