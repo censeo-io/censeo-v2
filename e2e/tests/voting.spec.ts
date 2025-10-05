@@ -47,8 +47,8 @@ test.describe("Voting Tests", () => {
     // Submit a vote by clicking a Fibonacci point button
     await page.getByTestId("vote-button-5").click();
 
-    // Verify vote confirmation
-    await expect(page.locator('text="You voted: 5 points"')).toBeVisible();
+    // Verify vote confirmation (message includes additional text about changing vote)
+    await expect(page.getByText(/You voted: 5 points/)).toBeVisible();
 
     // Verify voting status
     await expect(page.locator('text="1 of 1 voted"')).toBeVisible();
@@ -78,11 +78,11 @@ test.describe("Voting Tests", () => {
 
     // Submit initial vote
     await page.getByTestId("vote-button-3").click();
-    await expect(page.locator('text="You voted: 3 points"')).toBeVisible();
+    await expect(page.getByText(/You voted: 3 points/)).toBeVisible();
 
     // Change vote
     await page.getByTestId("vote-button-8").click();
-    await expect(page.locator('text="You voted: 8 points"')).toBeVisible();
+    await expect(page.getByText(/You voted: 8 points/)).toBeVisible();
 
     // Verify still only 1 vote
     await expect(page.locator('text="1 of 1 voted"')).toBeVisible();
