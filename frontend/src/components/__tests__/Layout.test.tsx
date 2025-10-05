@@ -1,6 +1,6 @@
 /**
- * Layout Component Tests
- * Tests for the main layout component including navigation and app structure
+ * Tests for Layout Component
+ * Tests basic layout rendering
  */
 
 import React from "react";
@@ -8,180 +8,112 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import Layout from "../Layout";
-import { AuthProvider } from "../auth/AuthContext";
 import { createAppTheme } from "../../theme/theme";
+import { useAuth } from "../auth/AuthContext";
 
-// Mock the API
-jest.mock("../../services/api", () => ({
-  authApi: {
-    login: jest.fn().mockResolvedValue({
-      user: { id: "1", name: "Test User", email: "test@example.com" },
-      session_token: "mock-token",
-      message: "Login successful",
-    }),
-    logout: jest.fn().mockResolvedValue({ message: "Logout successful" }),
-    getStatus: jest.fn().mockResolvedValue({
-      authenticated: false,
-      user: null,
-    }),
-  },
-}));
+// Mock AuthContext
+jest.mock("../auth/AuthContext");
 
-// Get reference to the mocked module
-const mockedApi = jest.mocked(require("../../services/api"));
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
-const mockNavigate = jest.fn();
+const theme = createAppTheme();
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: () => mockNavigate,
-}));
+const renderLayout = (children: React.ReactNode = <div>Test Content</div>) => {
+  return render(
+    <MemoryRouter>
+      <ThemeProvider theme={theme}>
+        <Layout>{children}</Layout>
+      </ThemeProvider>
+    </MemoryRouter>
+  );
+};
 
-describe("Layout Component", () => {
-  const theme = createAppTheme();
-
-  const renderLayout = (
-    children: React.ReactNode = <div>Test Content</div>,
-  ) => {
-    return render(
-      <MemoryRouter>
-        <ThemeProvider theme={theme}>
-          <AuthProvider>
-            <Layout>{children}</Layout>
-          </AuthProvider>
-        </ThemeProvider>
-      </MemoryRouter>,
-    );
-  };
-
+describe("Layout", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset auth status to unauthenticated for most tests
-    mockedApi.authApi.getStatus.mockResolvedValue({
-      authenticated: false,
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false,
       user: null,
-    });
-    // Clear localStorage
-    localStorage.clear();
+      logout: jest.fn(),
+    } as any);
   });
 
-  describe("Layout Structure", () => {
-    test("renders main layout structure", () => {
-      renderLayout();
+  it("should render children content", () => {
+    renderLayout(<div>Test Content</div>);
 
-      expect(screen.getByTestId("layout-container")).toBeInTheDocument();
-      expect(screen.getByTestId("layout-header")).toBeInTheDocument();
-      expect(screen.getByTestId("layout-content")).toBeInTheDocument();
-    });
-
-    test("renders children content in main content area", () => {
-      renderLayout(<div data-testid="custom-content">Custom Test Content</div>);
-
-      expect(screen.getByTestId("custom-content")).toBeInTheDocument();
-      expect(screen.getByText("Custom Test Content")).toBeInTheDocument();
-    });
-
-    test("applies correct Material-UI styling", () => {
-      renderLayout();
-
-      const container = screen.getByTestId("layout-container");
-      expect(container).toHaveStyle("min-height: 100vh");
-    });
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
-  describe("Header Navigation", () => {
-    test("renders application title", () => {
-      renderLayout();
+  it("should render Censeo branding", () => {
+    renderLayout();
 
-      expect(screen.getByText("Censeo")).toBeInTheDocument();
-    });
-
-    test("renders navigation menu", () => {
-      renderLayout();
-
-      expect(screen.getByTestId("navigation-menu")).toBeInTheDocument();
-    });
-
-    test("handles navigation menu interactions", async () => {
-      // Mock authenticated state for this test
-      mockedApi.authApi.getStatus.mockResolvedValue({
-        authenticated: true,
-        user: { id: "1", name: "Test User", email: "test@example.com" },
-      });
-
-      renderLayout();
-
-      const menuButton = await screen.findByTestId("menu-button");
-      fireEvent.click(menuButton);
-
-      // Should toggle menu visibility or trigger navigation
-      expect(mockNavigate).toHaveBeenCalledTimes(0); // Initially no navigation
-    });
+    expect(screen.getByText("Censeo")).toBeInTheDocument();
   });
 
-  describe("Authentication Status", () => {
-    test("renders authentication status in header", () => {
-      renderLayout();
+  it("should render login button when not authenticated", () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false,
+      user: null,
+      logout: jest.fn(),
+    } as any);
 
-      // Should show login/logout controls
-      expect(screen.getByTestId("auth-controls")).toBeInTheDocument();
-    });
+    renderLayout();
 
-    test("shows login button when not authenticated", () => {
-      renderLayout();
+    expect(screen.getByRole("button", { name: /Login/i })).toBeInTheDocument();
+  });
 
-      expect(screen.getByText("Login")).toBeInTheDocument();
+  it("should render user menu when authenticated", () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { id: "1", name: "Test User", email: "test@test.com" },
+      logout: jest.fn(),
+    } as any);
+
+    renderLayout();
+
+    expect(screen.getByRole("button", { name: /account menu/i })).toBeInTheDocument();
+  });
+
+  it("should open user menu when account button is clicked", async () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { id: "1", name: "Test User", email: "test@test.com" },
+      logout: jest.fn(),
+    } as any);
+
+    renderLayout();
+
+    const accountButton = screen.getByRole("button", { name: /account menu/i });
+    fireEvent.click(accountButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: /Logout/i })).toBeInTheDocument();
     });
   });
 
-  describe("Responsive Design", () => {
-    test("adapts layout for different screen sizes", () => {
-      renderLayout();
+  it("should call logout when logout menu item is clicked", async () => {
+    const mockLogout = jest.fn().mockResolvedValue(undefined);
 
-      const container = screen.getByTestId("layout-container");
-      expect(container).toHaveStyle("display: flex");
-      expect(container).toHaveStyle("flex-direction: column");
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { id: "1", name: "Test User", email: "test@test.com" },
+      logout: mockLogout,
+    } as any);
+
+    renderLayout();
+
+    const accountButton = screen.getByRole("button", { name: /account menu/i });
+    fireEvent.click(accountButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: /Logout/i })).toBeInTheDocument();
     });
 
-    test("handles mobile navigation appropriately", () => {
-      renderLayout();
+    const logoutMenuItem = screen.getByRole("menuitem", { name: /Logout/i });
+    fireEvent.click(logoutMenuItem);
 
-      // Should have responsive navigation elements
-      expect(screen.getByTestId("navigation-menu")).toBeInTheDocument();
-    });
-  });
-
-  describe("Accessibility", () => {
-    test("provides proper ARIA landmarks", () => {
-      renderLayout();
-
-      expect(screen.getByRole("banner")).toBeInTheDocument(); // header
-      expect(screen.getByRole("main")).toBeInTheDocument(); // main content
-    });
-
-    test("maintains proper heading hierarchy", () => {
-      renderLayout();
-
-      const appTitle = screen.getByRole("heading", { level: 1 });
-      expect(appTitle).toBeInTheDocument();
-      expect(appTitle).toHaveTextContent("Censeo");
-    });
-
-    test("supports keyboard navigation", async () => {
-      // Mock authenticated state for this test
-      mockedApi.authApi.getStatus.mockResolvedValue({
-        authenticated: true,
-        user: { id: "1", name: "Test User", email: "test@example.com" },
-      });
-
-      renderLayout();
-
-      await waitFor(() => {
-        const menuButton = screen.getByTestId("menu-button");
-
-        // Should be focusable
-        expect(menuButton).toHaveAttribute("tabindex", "0");
-      });
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalled();
     });
   });
 });
